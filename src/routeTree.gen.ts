@@ -9,50 +9,109 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as TabsRouteImport } from './routes/_tabs'
+import { Route as TabsIndexRouteImport } from './routes/_tabs.index'
+import { Route as TabsSettingRouteImport } from './routes/_tabs.setting'
+import { Route as TabsNeatenRouteImport } from './routes/_tabs.neaten'
 
-const IndexRoute = IndexRouteImport.update({
+const TabsRoute = TabsRouteImport.update({
+  id: '/_tabs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TabsIndexRoute = TabsIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsSettingRoute = TabsSettingRouteImport.update({
+  id: '/setting',
+  path: '/setting',
+  getParentRoute: () => TabsRoute,
+} as any)
+const TabsNeatenRoute = TabsNeatenRouteImport.update({
+  id: '/neaten',
+  path: '/neaten',
+  getParentRoute: () => TabsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof TabsIndexRoute
+  '/neaten': typeof TabsNeatenRoute
+  '/setting': typeof TabsSettingRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/neaten': typeof TabsNeatenRoute
+  '/setting': typeof TabsSettingRoute
+  '/': typeof TabsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_tabs': typeof TabsRouteWithChildren
+  '/_tabs/neaten': typeof TabsNeatenRoute
+  '/_tabs/setting': typeof TabsSettingRoute
+  '/_tabs/': typeof TabsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/neaten' | '/setting'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/neaten' | '/setting' | '/'
+  id: '__root__' | '/_tabs' | '/_tabs/neaten' | '/_tabs/setting' | '/_tabs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  TabsRoute: typeof TabsRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_tabs': {
+      id: '/_tabs'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof TabsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_tabs/': {
+      id: '/_tabs/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof TabsIndexRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    '/_tabs/setting': {
+      id: '/_tabs/setting'
+      path: '/setting'
+      fullPath: '/setting'
+      preLoaderRoute: typeof TabsSettingRouteImport
+      parentRoute: typeof TabsRoute
+    }
+    '/_tabs/neaten': {
+      id: '/_tabs/neaten'
+      path: '/neaten'
+      fullPath: '/neaten'
+      preLoaderRoute: typeof TabsNeatenRouteImport
+      parentRoute: typeof TabsRoute
     }
   }
 }
 
+interface TabsRouteChildren {
+  TabsNeatenRoute: typeof TabsNeatenRoute
+  TabsSettingRoute: typeof TabsSettingRoute
+  TabsIndexRoute: typeof TabsIndexRoute
+}
+
+const TabsRouteChildren: TabsRouteChildren = {
+  TabsNeatenRoute: TabsNeatenRoute,
+  TabsSettingRoute: TabsSettingRoute,
+  TabsIndexRoute: TabsIndexRoute,
+}
+
+const TabsRouteWithChildren = TabsRoute._addFileChildren(TabsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  TabsRoute: TabsRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
