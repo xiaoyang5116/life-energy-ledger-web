@@ -128,3 +128,31 @@
     @apply font-sans;
   }
 }
+
+/* page transition animation ----- start */
+::view-transition-old(root) {
+  animation: fade-out 160ms ease-out;
+}
+
+::view-transition-new(root) {
+  animation: fade-in 180ms ease-out;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* page transition animation ----- end */
