@@ -2,6 +2,10 @@
 
 This is a template for a new Vite project with React, TypeScript, and shadcn/ui.
 
+## 产品文档
+
+FIRE Tracker 的产品与工程文档放在 [docs](./docs/README.md)。
+
 ## Adding components
 
 To add components to your app, run the following command:
