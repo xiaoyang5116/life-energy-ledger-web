@@ -13,7 +13,6 @@ const queryClient = new QueryClient()
 // Create a new router instance
 const router = createRouter({
   routeTree,
-  defaultViewTransition: true,
 })
 
 // Register the router instance for type safety
