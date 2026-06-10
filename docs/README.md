@@ -9,7 +9,8 @@
 3. [专家审视与优化建议](./product/expert-review.md)
 4. [MVP 范围与流程](./product/mvp-scope.md)
 5. [领域模型与统计规则](./engineering/domain-model.md)
-6. [验收与开发计划](./engineering/acceptance-plan.md)
+6. [前端架构设计](./engineering/architecture.md)
+7. [验收与开发计划](./engineering/acceptance-plan.md)
 
 ## 文档分工
 
@@ -20,4 +21,5 @@
 | `product/expert-review.md`       | 从产品、信息架构、统计语义和实现风险角度审视 PRD         |
 | `product/mvp-scope.md`           | 约束 MVP 做什么、不做什么，以及页面与流程                |
 | `engineering/domain-model.md`    | 固化核心数据结构、枚举、自动复盘和统计语义，作为实现准绳 |
+| `engineering/architecture.md`    | 约束前端分层、目录结构和依赖方向                         |
 | `engineering/acceptance-plan.md` | 作为开发任务拆分与验收清单                               |
