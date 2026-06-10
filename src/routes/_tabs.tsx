@@ -13,7 +13,7 @@ function RouteComponent() {
   ] as const
 
   return (
-    <div className="relative min-h-dvh bg-background pb-[calc(60px+env(safe-area-inset-bottom))]">
+    <div className="relative min-h-svh bg-background pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] [--tabbar-height:60px]">
       {/* 顶部主内容视口 */}
       <main className="w-full px-4 py-3">
         <Outlet />
@@ -21,7 +21,7 @@ function RouteComponent() {
 
       {/* 底部固定 Tabbar 外壳 */}
       <nav className="fixed right-0 bottom-0 left-0 z-50 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md">
-        <div className="flex h-15 items-center justify-around">
+        <div className="flex h-(--tabbar-height) items-center">
           {tabs.map((tab) => (
             <Link
               key={tab.to}
@@ -29,7 +29,7 @@ function RouteComponent() {
               // hash-routing 或 exact 匹配模式，TanStack 默认能完美处理 active 状态
               activeOptions={{ exact: true }}
               viewTransition
-              className="flex flex-col items-center justify-center gap-1 text-muted-foreground transition-colors"
+              className="flex h-full flex-1 flex-col items-center justify-center gap-1 text-muted-foreground transition-colors"
             >
               {/* 利用回调渲染函数，当该路由激活时自动变换样式 */}
               {({ isActive }) => (
