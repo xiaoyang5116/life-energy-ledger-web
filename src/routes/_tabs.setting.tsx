@@ -41,6 +41,13 @@ const defaultFormValues: SettingsFormValues = {
   commuteHoursPerDay: "",
 }
 
+/**
+ * 读取存储的用户设置。
+ * - 如果浏览器不可用，则返回默认值。
+ * - 如果存储的用户设置不存在，则返回默认值。
+ * - 如果解析用户设置失败，则返回默认值。
+ * - 否则返回解析后的用户设置。
+ */
 function readStoredSettings(): SettingsFormValues {
   if (typeof window === "undefined") {
     return defaultFormValues
@@ -71,6 +78,19 @@ function readStoredSettings(): SettingsFormValues {
   }
 }
 
+function writeStoredSettings(formValues: SettingsFormValues) {
+  if (typeof window === "undefined") {
+    return
+  }
+  window.localStorage.setItem(settingsStorageKey, JSON.stringify(formValues))
+}
+
+/**
+ * 将值转换为存储的输入值。
+ * - 如果值是有限数字，则转换为字符串。
+ * - 如果值是字符串，则直接返回。
+ * - 否则返回空字符串。
+ */
 function toStoredInputValue(value: unknown) {
   if (typeof value === "number" && Number.isFinite(value)) {
     return String(value)
@@ -79,11 +99,93 @@ function toStoredInputValue(value: unknown) {
   return typeof value === "string" ? value : ""
 }
 
+/** 真实时薪输入参数 */
+type RealHourlyWageInput = {
+  monthlyAfterTaxIncome: number
+  monthlyCommuteCost: number
+  workHoursPerDay: number
+  workDaysPerMonth: number
+  commuteHoursPerDay: number
+}
+
+/**
+ * 计算真实时薪。
+ * - 如果税后月工资减去月通勤成本小于等于0，或者月工作时间加上月通勤时间小于等于0，则返回null。
+ * - 否则返回真实时薪。
+ */
+function calculateRealHourlyWage(input: RealHourlyWageInput): number | null {
+  const monthlyWorkHours = input.workHoursPerDay * input.workDaysPerMonth
+  const monthlyCommuteHours = input.commuteHoursPerDay * input.workDaysPerMonth
+  const availableIncome = input.monthlyAfterTaxIncome - input.monthlyCommuteCost
+  const totalWorkRelatedHours = monthlyWorkHours + monthlyCommuteHours
+
+  if (availableIncome <= 0 || totalWorkRelatedHours <= 0) {
+    return null
+  }
+
+  return availableIncome / totalWorkRelatedHours
+}
+
+/**
+ * 解析字符串为非负数。
+ * - 如果转换结果是有限数字，则返回其与0的较大值（即负数会变0）。
+ * - 输入非法或无法转为有限数字，则返回0。
+ */
 function parseNonNegativeNumber(value: string) {
   const parsedValue = Number(value)
 
   return Number.isFinite(parsedValue) ? Math.max(parsedValue, 0) : 0
 }
+
+/**
+ * 将表单值转换为真实时薪输入参数。
+ * - 如果转换结果是有限数字，则返回其与0的较大值（即负数会变0）。
+ * - 输入非法或无法转为有限数字，则返回0。
+ */
+function toRealHourlyWageInput(
+  formValues: SettingsFormValues
+): RealHourlyWageInput {
+  return {
+    monthlyAfterTaxIncome: parseNonNegativeNumber(
+      formValues.monthlyAfterTaxIncome
+    ),
+    monthlyCommuteCost: parseNonNegativeNumber(formValues.monthlyCommuteCost),
+    workHoursPerDay: parseNonNegativeNumber(formValues.workHoursPerDay),
+    workDaysPerMonth: parseNonNegativeNumber(formValues.workDaysPerMonth),
+    commuteHoursPerDay: parseNonNegativeNumber(formValues.commuteHoursPerDay),
+  }
+}
+
+const settingFields = [
+  {
+    key: "monthlyAfterTaxIncome" as const,
+    label: "税后月工资",
+    placeholder: "例如 15000",
+  },
+  {
+    key: "monthlyCommuteCost" as const,
+    label: "月通勤成本",
+    placeholder: "例如 600",
+  },
+  {
+    key: "workHoursPerDay" as const,
+    label: "每日工作小时",
+    placeholder: "例如 8",
+    step: "0.5",
+  },
+  {
+    key: "workDaysPerMonth" as const,
+    label: "每月工作天数",
+    placeholder: "例如 22",
+    step: "1",
+  },
+  {
+    key: "commuteHoursPerDay" as const,
+    label: "每日通勤小时",
+    placeholder: "例如 1.5",
+    step: "0.5",
+  },
+]
 
 function RouteComponent() {
   const [formValues, setFormValues] =
@@ -91,28 +193,8 @@ function RouteComponent() {
   const [savedAt, setSavedAt] = useState<string | null>(null)
 
   const realHourlyWage = useMemo(() => {
-    const monthlyAfterTaxIncome = parseNonNegativeNumber(
-      formValues.monthlyAfterTaxIncome
-    )
-    const monthlyCommuteCost = parseNonNegativeNumber(
-      formValues.monthlyCommuteCost
-    )
-    const workHoursPerDay = parseNonNegativeNumber(formValues.workHoursPerDay)
-    const workDaysPerMonth = parseNonNegativeNumber(formValues.workDaysPerMonth)
-    const commuteHoursPerDay = parseNonNegativeNumber(
-      formValues.commuteHoursPerDay
-    )
-
-    const monthlyWorkHours = workHoursPerDay * workDaysPerMonth
-    const monthlyCommuteHours = commuteHoursPerDay * workDaysPerMonth
-    const availableIncome = monthlyAfterTaxIncome - monthlyCommuteCost
-    const totalWorkRelatedHours = monthlyWorkHours + monthlyCommuteHours
-
-    if (availableIncome <= 0 || totalWorkRelatedHours <= 0) {
-      return null
-    }
-
-    return availableIncome / totalWorkRelatedHours
+    const input = toRealHourlyWageInput(formValues)
+    return calculateRealHourlyWage(input)
   }, [formValues])
 
   function updateFormValue(field: keyof SettingsFormValues, value: string) {
@@ -125,7 +207,7 @@ function RouteComponent() {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    window.localStorage.setItem(settingsStorageKey, JSON.stringify(formValues))
+    writeStoredSettings(formValues)
     setSavedAt(new Date().toLocaleTimeString("zh-CN", { hour12: false }))
   }
 
@@ -149,87 +231,23 @@ function RouteComponent() {
 
           <CardContent>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="monthlyAfterTaxIncome">
-                  税后月工资
-                </FieldLabel>
-                <Input
-                  id="monthlyAfterTaxIncome"
-                  inputMode="decimal"
-                  min="0"
-                  placeholder="例如 15000"
-                  type="number"
-                  value={formValues.monthlyAfterTaxIncome}
-                  onChange={(event) =>
-                    updateFormValue("monthlyAfterTaxIncome", event.target.value)
-                  }
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="monthlyCommuteCost">月通勤成本</FieldLabel>
-                <Input
-                  id="monthlyCommuteCost"
-                  inputMode="decimal"
-                  min="0"
-                  placeholder="例如 600"
-                  type="number"
-                  value={formValues.monthlyCommuteCost}
-                  onChange={(event) =>
-                    updateFormValue("monthlyCommuteCost", event.target.value)
-                  }
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="workHoursPerDay">每日工作小时</FieldLabel>
-                <Input
-                  id="workHoursPerDay"
-                  inputMode="decimal"
-                  min="0"
-                  placeholder="例如 8"
-                  step="0.5"
-                  type="number"
-                  value={formValues.workHoursPerDay}
-                  onChange={(event) =>
-                    updateFormValue("workHoursPerDay", event.target.value)
-                  }
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="workDaysPerMonth">每月工作天数</FieldLabel>
-                <Input
-                  id="workDaysPerMonth"
-                  inputMode="decimal"
-                  min="0"
-                  placeholder="例如 22"
-                  step="1"
-                  type="number"
-                  value={formValues.workDaysPerMonth}
-                  onChange={(event) =>
-                    updateFormValue("workDaysPerMonth", event.target.value)
-                  }
-                />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="commuteHoursPerDay">
-                  每日通勤小时
-                </FieldLabel>
-                <Input
-                  id="commuteHoursPerDay"
-                  inputMode="decimal"
-                  min="0"
-                  placeholder="例如 1.5"
-                  step="0.5"
-                  type="number"
-                  value={formValues.commuteHoursPerDay}
-                  onChange={(event) =>
-                    updateFormValue("commuteHoursPerDay", event.target.value)
-                  }
-                />
-              </Field>
+              {settingFields.map((field) => (
+                <Field key={field.key}>
+                  <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
+                  <Input
+                    id={field.key}
+                    inputMode="decimal"
+                    min="0"
+                    placeholder={field.placeholder}
+                    step={"step" in field ? field.step : undefined}
+                    type="number"
+                    value={formValues[field.key]}
+                    onChange={(event) =>
+                      updateFormValue(field.key, event.target.value)
+                    }
+                  />
+                </Field>
+              ))}
 
               <Field>
                 <FieldLabel>当前真实时薪</FieldLabel>
