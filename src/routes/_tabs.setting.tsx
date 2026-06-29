@@ -1,6 +1,7 @@
 import { type SubmitEvent, useMemo, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { Save } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -21,80 +22,27 @@ import { Input } from "@/components/ui/input"
 
 import {
   calculateRealHourlyWage,
-  toRealHourlyWageInput,
-  type SettingsFormValues,
+  calculateRealHourlyWageFormDefaultValues,
+  toCalculateRealHourlyWageArgs,
+  toCalculateRealHourlyWageFormFields,
+  type TCalculateRealHourlyWageFormFields,
 } from "@/features/settings/hourly-wage"
+import { getUserSettings, saveUserSettings } from "@/features/ledger/storage"
 
 export const Route = createFileRoute("/_tabs/setting")({
   component: RouteComponent,
 })
 
-const settingsStorageKey = "fire-tracker:user-settings"
+const userSettings = getUserSettings()
 
-const defaultFormValues: SettingsFormValues = {
-  monthlyAfterTaxIncome: "",
-  monthlyCommuteCost: "",
-  workHoursPerDay: "",
-  workDaysPerMonth: "",
-  commuteHoursPerDay: "",
+function defaultFormValues() {
+  return userSettings
+    ? toCalculateRealHourlyWageFormFields(userSettings)
+    : calculateRealHourlyWageFormDefaultValues
 }
 
-/**
- * 读取存储的用户设置。
- * - 如果浏览器不可用，则返回默认值。
- * - 如果存储的用户设置不存在，则返回默认值。
- * - 如果解析用户设置失败，则返回默认值。
- * - 否则返回解析后的用户设置。
- */
-function readStoredSettings(): SettingsFormValues {
-  if (typeof window === "undefined") {
-    return defaultFormValues
-  }
-
-  const rawSettings = window.localStorage.getItem(settingsStorageKey)
-
-  if (!rawSettings) {
-    return defaultFormValues
-  }
-
-  try {
-    const parsedSettings = JSON.parse(rawSettings) as Partial<
-      Record<keyof SettingsFormValues, unknown>
-    >
-
-    return {
-      monthlyAfterTaxIncome: toStoredInputValue(
-        parsedSettings.monthlyAfterTaxIncome
-      ),
-      monthlyCommuteCost: toStoredInputValue(parsedSettings.monthlyCommuteCost),
-      workHoursPerDay: toStoredInputValue(parsedSettings.workHoursPerDay),
-      workDaysPerMonth: toStoredInputValue(parsedSettings.workDaysPerMonth),
-      commuteHoursPerDay: toStoredInputValue(parsedSettings.commuteHoursPerDay),
-    }
-  } catch {
-    return defaultFormValues
-  }
-}
-
-function writeStoredSettings(formValues: SettingsFormValues) {
-  if (typeof window === "undefined") {
-    return
-  }
-  window.localStorage.setItem(settingsStorageKey, JSON.stringify(formValues))
-}
-
-/**
- * 将值转换为存储的输入值。
- * - 如果值是有限数字，则转换为字符串。
- * - 如果值是字符串，则直接返回。
- * - 否则返回空字符串。
- */
-function toStoredInputValue(value: unknown) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return String(value)
-  }
-
-  return typeof value === "string" ? value : ""
+function defaultSavedAt() {
+  return userSettings?.updatedAt ? new Date(userSettings.updatedAt) : null
 }
 
 const settingFields = [
@@ -102,11 +50,13 @@ const settingFields = [
     key: "monthlyAfterTaxIncome" as const,
     label: "税后月工资",
     placeholder: "例如 15000",
+    step: "0.01",
   },
   {
     key: "monthlyCommuteCost" as const,
     label: "月通勤成本",
     placeholder: "例如 600",
+    step: "0.01",
   },
   {
     key: "workHoursPerDay" as const,
@@ -130,15 +80,18 @@ const settingFields = [
 
 function RouteComponent() {
   const [formValues, setFormValues] =
-    useState<SettingsFormValues>(readStoredSettings)
-  const [savedAt, setSavedAt] = useState<string | null>(null)
+    useState<TCalculateRealHourlyWageFormFields>(defaultFormValues())
+  const [savedAt, setSavedAt] = useState<Date | null>(defaultSavedAt())
 
   const realHourlyWage = useMemo(() => {
-    const input = toRealHourlyWageInput(formValues)
+    const input = toCalculateRealHourlyWageArgs(formValues)
     return calculateRealHourlyWage(input)
   }, [formValues])
 
-  function updateFormValue(field: keyof SettingsFormValues, value: string) {
+  function updateFormValue(
+    field: keyof TCalculateRealHourlyWageFormFields,
+    value: string
+  ) {
     setFormValues((currentValues) => ({
       ...currentValues,
       [field]: value,
@@ -148,8 +101,19 @@ function RouteComponent() {
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    writeStoredSettings(formValues)
-    setSavedAt(new Date().toLocaleTimeString("zh-CN", { hour12: false }))
+    const input = toCalculateRealHourlyWageArgs(formValues)
+
+    if (realHourlyWage === null) {
+      return toast.error("请检查输入是否正确，计算结果为空")
+    }
+
+    const saveTime = new Date()
+    saveUserSettings({
+      ...input,
+      realHourlyWage: realHourlyWage,
+      updatedAt: saveTime.toISOString(),
+    })
+    setSavedAt(saveTime)
   }
 
   return (
@@ -180,8 +144,8 @@ function RouteComponent() {
                     inputMode="decimal"
                     min="0"
                     placeholder={field.placeholder}
-                    step={"step" in field ? field.step : undefined}
                     type="number"
+                    step={field.step}
                     value={formValues[field.key]}
                     onChange={(event) =>
                       updateFormValue(field.key, event.target.value)
@@ -208,7 +172,9 @@ function RouteComponent() {
 
           <CardFooter className="justify-between">
             <p className="text-sm text-muted-foreground">
-              {savedAt ? `已保存于 ${savedAt}` : "修改后请保存设置"}
+              {savedAt
+                ? `已保存于 ${savedAt.toLocaleString("zh-CN", { hour12: false })}`
+                : "修改后请保存设置"}
             </p>
             <Button type="submit">
               <Save data-icon="inline-start" />

@@ -1,13 +1,5 @@
-export type SettingsFormValues = {
-  monthlyAfterTaxIncome: string
-  monthlyCommuteCost: string
-  workHoursPerDay: string
-  workDaysPerMonth: string
-  commuteHoursPerDay: string
-}
-
-/** 真实时薪输入参数 */
-export type RealHourlyWageInput = {
+/** 计算真实时薪的参数 */
+export type TCalculateRealHourlyWageArgs = {
   monthlyAfterTaxIncome: number
   monthlyCommuteCost: number
   workHoursPerDay: number
@@ -15,13 +7,15 @@ export type RealHourlyWageInput = {
   commuteHoursPerDay: number
 }
 
-/**
- * 计算真实时薪。
- * - 如果税后月工资减去月通勤成本小于等于0，或者月工作时间加上月通勤时间小于等于0，则返回null。
- * - 否则返回真实时薪。
- */
+/** 计算真实时薪表单字段类型 */
+export type TCalculateRealHourlyWageFormFields = Record<
+  keyof TCalculateRealHourlyWageArgs,
+  string
+>
+
+/** 计算真实时薪 */
 export function calculateRealHourlyWage(
-  input: RealHourlyWageInput
+  input: TCalculateRealHourlyWageArgs
 ): number | null {
   const monthlyWorkHours = input.workHoursPerDay * input.workDaysPerMonth
   const monthlyCommuteHours = input.commuteHoursPerDay * input.workDaysPerMonth
@@ -46,14 +40,10 @@ export function parseNonNegativeNumber(value: string) {
   return Number.isFinite(parsedValue) ? Math.max(parsedValue, 0) : 0
 }
 
-/**
- * 将表单值转换为真实时薪输入参数。
- * - 如果转换结果是有限数字，则返回其与0的较大值（即负数会变0）。
- * - 输入非法或无法转为有限数字，则返回0。
- */
-export function toRealHourlyWageInput(
-  formValues: SettingsFormValues
-): RealHourlyWageInput {
+/** 将表单值转换为计算真实时薪的参数 */
+export function toCalculateRealHourlyWageArgs(
+  formValues: TCalculateRealHourlyWageFormFields
+): TCalculateRealHourlyWageArgs {
   return {
     monthlyAfterTaxIncome: parseNonNegativeNumber(
       formValues.monthlyAfterTaxIncome
@@ -64,3 +54,26 @@ export function toRealHourlyWageInput(
     commuteHoursPerDay: parseNonNegativeNumber(formValues.commuteHoursPerDay),
   }
 }
+
+/** 将计算真实时薪的参数转换为表单值 */
+export function toCalculateRealHourlyWageFormFields(
+  args: TCalculateRealHourlyWageArgs
+): TCalculateRealHourlyWageFormFields {
+  return {
+    monthlyAfterTaxIncome: String(args.monthlyAfterTaxIncome),
+    monthlyCommuteCost: String(args.monthlyCommuteCost),
+    workHoursPerDay: String(args.workHoursPerDay),
+    workDaysPerMonth: String(args.workDaysPerMonth),
+    commuteHoursPerDay: String(args.commuteHoursPerDay),
+  }
+}
+
+/** 计算真实时薪表单默认值 */
+export const calculateRealHourlyWageFormDefaultValues: TCalculateRealHourlyWageFormFields =
+  {
+    monthlyAfterTaxIncome: "",
+    monthlyCommuteCost: "",
+    workHoursPerDay: "",
+    workDaysPerMonth: "",
+    commuteHoursPerDay: "",
+  }

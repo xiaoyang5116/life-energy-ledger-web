@@ -140,7 +140,7 @@ export type AutoReviewRule = {
 /** 用户设置，用于计算真实时薪和生命能量。 */
 export type UserSettings = {
   /** 设置 ID */
-  id: string
+  id?: string
   /** 税后月工资 */
   monthlyAfterTaxIncome: number
   /** 月通勤成本 */
@@ -154,7 +154,7 @@ export type UserSettings = {
   /** 真实时薪 */
   realHourlyWage: number
   /** 创建时间 */
-  createdAt: string
+  createdAt?: string
   /** 更新时间 */
-  updatedAt: string
+  updatedAt?: string
 }
