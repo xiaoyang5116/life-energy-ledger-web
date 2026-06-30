@@ -1,0 +1,40 @@
+{
+  "editor.formatOnSave": true, // 保存时格式化
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // 默认格式化工具
+  "typescript.preferences.importModuleSpecifier": "non-relative", // 导入模块规范
+  "typescript.tsdk": "node_modules/typescript/lib", // TypeScript 的 SDK 路径
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ], // 验证工具
+  "tailwindCSS.classFunctions": [
+    "cn",
+    "cva"
+  ], // Tailwind CSS 的类函数配置
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit" // 保存时自动修复 ESLint 错误
+  },
+  "typescript.updateImportsOnFileMove.enabled": "always", // 文件移动时更新导入
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ], // ESLint 工作目录配置
+  "search.exclude": {
+    "dist": true, // 排除 dist 目录
+    "node_modules": true, // 排除 node_modules 目录
+    "src/routeTree.gen.ts": true // 排除 routeTree.gen.ts 文件
+  }, // 搜索排除配置
+  "editor.foldingImportsByDefault": true, // 默认折叠导入
+  "explorer.fileNesting.enabled": true, // 文件嵌套
+  "explorer.fileNesting.patterns": {
+    "package.json": ".npmrc, package-lock.json, pnpm-lock.yaml, yarn.lock, bun.lockb, eslint.config.js, prettier.config.js, tsconfig.json, tsconfig.app.json, tsconfig.node.json, vite.config.ts,skills-lock.json, components.json, .prettierrc, .prettierignore, .eslintignore, .gitignore, .editorconfig"
+  }, // 文件嵌套模式
+  "files.exclude": {
+    "node_modules": true, // 排除 node_modules 目录
+    ".tanstack": true, // 排除 tanstack 文件夹
+    ".zed": true, // 排除 zed 文件夹
+  },
+}
