@@ -68,6 +68,15 @@ export function toCalculateRealHourlyWageFormFields(
   }
 }
 
+/** 比较两份表单值是否完全相同，用于判断表单是否被修改过 */
+export function areFormFieldsEqual(
+  a: TCalculateRealHourlyWageFormFields,
+  b: TCalculateRealHourlyWageFormFields
+): boolean {
+  const keys = Object.keys(a) as Array<keyof TCalculateRealHourlyWageFormFields>
+  return keys.every((key) => a[key] === b[key])
+}
+
 /** 计算真实时薪表单默认值 */
 export const calculateRealHourlyWageFormDefaultValues: TCalculateRealHourlyWageFormFields =
   {

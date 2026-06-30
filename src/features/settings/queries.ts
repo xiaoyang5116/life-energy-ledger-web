@@ -10,6 +10,7 @@ export function useUserSettings() {
     queryKey: userSettingsQueryKey,
     queryFn: getUserSettings,
     staleTime: Infinity,
+    initialData: getUserSettings(),
   })
 }
 

@@ -78,11 +78,22 @@ export function saveUserSettings(userSettings: Omit<UserSettings, "id">) {
   } else {
     data.userSettings = {
       ...userSettings,
-      id: crypto.randomUUID(),
+      id: createId(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
   }
 
   saveRaw(data)
+}
+
+/** 创建 ID */
+function createId() {
+  if (crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  )
 }

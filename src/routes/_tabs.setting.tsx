@@ -21,6 +21,7 @@ import {
 import { Input } from "@/components/ui/input"
 
 import {
+  areFormFieldsEqual,
   calculateRealHourlyWage,
   calculateRealHourlyWageFormDefaultValues,
   toCalculateRealHourlyWageArgs,
@@ -41,7 +42,7 @@ function RouteComponent() {
   const { data: userSettings, isLoading } = useUserSettings()
 
   if (isLoading) {
-    return <div>Loading...</div>
+    return <div className="p-6 text-sm text-muted-foreground">加载中…</div>
   }
 
   return (
@@ -53,63 +54,78 @@ function RouteComponent() {
         </p>
       </header>
 
-      <SettingRealHourlyWageForm userSettings={userSettings ?? null} />
+      <SettingRealHourlyWageForm
+        key={userSettings?.updatedAt ?? "new"}
+        userSettings={userSettings ?? null}
+      />
     </div>
   )
 }
 
 const settingFields = [
   {
-    key: "monthlyAfterTaxIncome" as const,
+    key: "monthlyAfterTaxIncome",
     label: "税后月工资",
     placeholder: "例如 15000",
     step: "0.01",
   },
   {
-    key: "monthlyCommuteCost" as const,
+    key: "monthlyCommuteCost",
     label: "月通勤成本",
     placeholder: "例如 600",
     step: "0.01",
   },
   {
-    key: "workHoursPerDay" as const,
+    key: "workHoursPerDay",
     label: "每日工作小时",
     placeholder: "例如 8",
     step: "0.5",
   },
   {
-    key: "workDaysPerMonth" as const,
+    key: "workDaysPerMonth",
     label: "每月工作天数",
     placeholder: "例如 22",
     step: "1",
   },
   {
-    key: "commuteHoursPerDay" as const,
+    key: "commuteHoursPerDay",
     label: "每日通勤小时",
     placeholder: "例如 1.5",
     step: "0.5",
   },
-]
+] satisfies ReadonlyArray<{
+  key: keyof TCalculateRealHourlyWageFormFields
+  label: string
+  placeholder: string
+  step: string
+}>
 
 function SettingRealHourlyWageForm({
   userSettings,
 }: {
   userSettings: UserSettings | null
 }) {
-  const [formValues, setFormValues] = useState(() =>
-    userSettings
-      ? toCalculateRealHourlyWageFormFields(userSettings)
-      : calculateRealHourlyWageFormDefaultValues
+  const savedFormValues = useMemo(
+    () =>
+      userSettings
+        ? toCalculateRealHourlyWageFormFields(userSettings)
+        : calculateRealHourlyWageFormDefaultValues,
+    [userSettings]
   )
-  const [savedAt, setSavedAt] = useState<string | null>(
-    () => userSettings?.updatedAt ?? null
-  )
+
+  // 用户正在编辑的草稿，是这里唯一需要的本地 state。
+  // 组件挂载时以已保存值为初值；保存成功后由父组件的 key 触发重建来重置草稿。
+  const [formValues, setFormValues] = useState(savedFormValues)
   const { mutate: saveUserSettings } = useSaveUserSettings()
 
   const realHourlyWage = useMemo(() => {
     const input = toCalculateRealHourlyWageArgs(formValues)
     return calculateRealHourlyWage(input)
   }, [formValues])
+
+  // 派生值：直接从已保存数据算出，无需额外 state 手动同步。
+  const savedAt = userSettings?.updatedAt ?? null
+  const isDirty = !areFormFieldsEqual(formValues, savedFormValues)
 
   function updateFormValue(
     field: keyof TCalculateRealHourlyWageFormFields,
@@ -119,7 +135,6 @@ function SettingRealHourlyWageForm({
       ...currentValues,
       [field]: value,
     }))
-    setSavedAt(null)
   }
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
@@ -139,13 +154,13 @@ function SettingRealHourlyWageForm({
         realHourlyWage: realHourlyWage,
       },
       {
-        onSuccess: (result) => {
-          setSavedAt(result?.updatedAt ?? null)
+        onSuccess: () => {
           toast.success("设置已保存", {
             position: "top-center",
           })
         },
-        onError: () => {
+        onError: (error) => {
+          console.error(error)
           toast.error("设置保存失败", {
             position: "top-center",
           })
@@ -187,7 +202,7 @@ function SettingRealHourlyWageForm({
             <Field>
               <FieldLabel>当前真实时薪</FieldLabel>
               <div className="rounded-lg border bg-muted px-3 py-2">
-                <div className="text-2xl font-semibold">
+                <div className="text-2xl font-semibold" aria-live="polite">
                   {realHourlyWage === null
                     ? "待计算"
                     : `${realHourlyWage.toFixed(2)} 元/小时`}
@@ -202,9 +217,11 @@ function SettingRealHourlyWageForm({
 
         <CardFooter className="justify-between">
           <p className="text-sm text-muted-foreground">
-            {savedAt
-              ? `已保存于 ${new Date(savedAt).toLocaleString("zh-CN", { hour12: false })}`
-              : "修改后请保存设置"}
+            {isDirty
+              ? "有未保存的修改"
+              : savedAt
+                ? `已保存于 ${new Date(savedAt).toLocaleString("zh-CN", { hour12: false })}`
+                : "修改后请保存设置"}
           </p>
           <Button type="submit">
             <Save data-icon="inline-start" />
