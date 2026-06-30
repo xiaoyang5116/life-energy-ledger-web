@@ -73,6 +73,7 @@ export function saveUserSettings(userSettings: Omit<UserSettings, "id">) {
     data.userSettings = {
       ...data.userSettings,
       ...userSettings,
+      updatedAt: new Date().toISOString(),
     }
   } else {
     data.userSettings = {

@@ -27,22 +27,35 @@ import {
   toCalculateRealHourlyWageFormFields,
   type TCalculateRealHourlyWageFormFields,
 } from "@/features/settings/hourly-wage"
-import { getUserSettings, saveUserSettings } from "@/features/ledger/storage"
+import {
+  useSaveUserSettings,
+  useUserSettings,
+} from "@/features/settings/queries"
+import type { UserSettings } from "@/features/ledger/model"
 
 export const Route = createFileRoute("/_tabs/setting")({
   component: RouteComponent,
 })
 
-const userSettings = getUserSettings()
+function RouteComponent() {
+  const { data: userSettings, isLoading } = useUserSettings()
 
-function defaultFormValues() {
-  return userSettings
-    ? toCalculateRealHourlyWageFormFields(userSettings)
-    : calculateRealHourlyWageFormDefaultValues
-}
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
-function defaultSavedAt() {
-  return userSettings?.updatedAt ? new Date(userSettings.updatedAt) : null
+  return (
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight">设置</h1>
+        <p className="text-sm text-muted-foreground">
+          配置真实时薪参数，让每笔金额换算成更贴近生活的生命能量。
+        </p>
+      </header>
+
+      <SettingRealHourlyWageForm userSettings={userSettings ?? null} />
+    </div>
+  )
 }
 
 const settingFields = [
@@ -78,10 +91,20 @@ const settingFields = [
   },
 ]
 
-function RouteComponent() {
-  const [formValues, setFormValues] =
-    useState<TCalculateRealHourlyWageFormFields>(defaultFormValues())
-  const [savedAt, setSavedAt] = useState<Date | null>(defaultSavedAt())
+function SettingRealHourlyWageForm({
+  userSettings,
+}: {
+  userSettings: UserSettings | null
+}) {
+  const [formValues, setFormValues] = useState(() =>
+    userSettings
+      ? toCalculateRealHourlyWageFormFields(userSettings)
+      : calculateRealHourlyWageFormDefaultValues
+  )
+  const [savedAt, setSavedAt] = useState<string | null>(
+    () => userSettings?.updatedAt ?? null
+  )
+  const { mutate: saveUserSettings } = useSaveUserSettings()
 
   const realHourlyWage = useMemo(() => {
     const input = toCalculateRealHourlyWageArgs(formValues)
@@ -104,85 +127,91 @@ function RouteComponent() {
     const input = toCalculateRealHourlyWageArgs(formValues)
 
     if (realHourlyWage === null) {
-      return toast.error("请检查输入是否正确，计算结果为空")
+      toast.error("请检查输入是否正确，计算结果为空", {
+        position: "top-center",
+      })
+      return
     }
 
-    const saveTime = new Date()
-    saveUserSettings({
-      ...input,
-      realHourlyWage: realHourlyWage,
-      updatedAt: saveTime.toISOString(),
-    })
-    setSavedAt(saveTime)
+    saveUserSettings(
+      {
+        ...input,
+        realHourlyWage: realHourlyWage,
+      },
+      {
+        onSuccess: (result) => {
+          setSavedAt(result?.updatedAt ?? null)
+          toast.success("设置已保存", {
+            position: "top-center",
+          })
+        },
+        onError: () => {
+          toast.error("设置保存失败", {
+            position: "top-center",
+          })
+        },
+      }
+    )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-4">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight">设置</h1>
-        <p className="text-sm text-muted-foreground">
-          配置真实时薪参数，让每笔金额换算成更贴近生活的生命能量。
-        </p>
-      </header>
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <CardHeader>
+          <CardTitle>真实时薪</CardTitle>
+          <CardDescription>
+            系统会把通勤成本和通勤时间一起纳入计算。
+          </CardDescription>
+        </CardHeader>
 
-      <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>真实时薪</CardTitle>
-            <CardDescription>
-              系统会把通勤成本和通勤时间一起纳入计算。
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            <FieldGroup>
-              {settingFields.map((field) => (
-                <Field key={field.key}>
-                  <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
-                  <Input
-                    id={field.key}
-                    inputMode="decimal"
-                    min="0"
-                    placeholder={field.placeholder}
-                    type="number"
-                    step={field.step}
-                    value={formValues[field.key]}
-                    onChange={(event) =>
-                      updateFormValue(field.key, event.target.value)
-                    }
-                  />
-                </Field>
-              ))}
-
-              <Field>
-                <FieldLabel>当前真实时薪</FieldLabel>
-                <div className="rounded-lg border bg-muted px-3 py-2">
-                  <div className="text-2xl font-semibold">
-                    {realHourlyWage === null
-                      ? "待计算"
-                      : `${realHourlyWage.toFixed(2)} 元/小时`}
-                  </div>
-                  <FieldDescription className="mt-1">
-                    公式：(税后月工资 - 月通勤成本) / (月工作时间 + 月通勤时间)
-                  </FieldDescription>
-                </div>
+        <CardContent>
+          <FieldGroup>
+            {settingFields.map((field) => (
+              <Field key={field.key}>
+                <FieldLabel htmlFor={field.key}>{field.label}</FieldLabel>
+                <Input
+                  id={field.key}
+                  inputMode="decimal"
+                  min="0"
+                  placeholder={field.placeholder}
+                  type="number"
+                  step={field.step}
+                  value={formValues[field.key]}
+                  onChange={(event) =>
+                    updateFormValue(field.key, event.target.value)
+                  }
+                />
               </Field>
-            </FieldGroup>
-          </CardContent>
+            ))}
 
-          <CardFooter className="justify-between">
-            <p className="text-sm text-muted-foreground">
-              {savedAt
-                ? `已保存于 ${savedAt.toLocaleString("zh-CN", { hour12: false })}`
-                : "修改后请保存设置"}
-            </p>
-            <Button type="submit">
-              <Save data-icon="inline-start" />
-              保存
-            </Button>
-          </CardFooter>
-        </Card>
-      </form>
-    </div>
+            <Field>
+              <FieldLabel>当前真实时薪</FieldLabel>
+              <div className="rounded-lg border bg-muted px-3 py-2">
+                <div className="text-2xl font-semibold">
+                  {realHourlyWage === null
+                    ? "待计算"
+                    : `${realHourlyWage.toFixed(2)} 元/小时`}
+                </div>
+                <FieldDescription className="mt-1">
+                  公式：(税后月工资 - 月通勤成本) / (月工作时间 + 月通勤时间)
+                </FieldDescription>
+              </div>
+            </Field>
+          </FieldGroup>
+        </CardContent>
+
+        <CardFooter className="justify-between">
+          <p className="text-sm text-muted-foreground">
+            {savedAt
+              ? `已保存于 ${new Date(savedAt).toLocaleString("zh-CN", { hour12: false })}`
+              : "修改后请保存设置"}
+          </p>
+          <Button type="submit">
+            <Save data-icon="inline-start" />
+            保存
+          </Button>
+        </CardFooter>
+      </Card>
+    </form>
   )
 }
