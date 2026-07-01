@@ -1,13 +1,19 @@
-import type { UserSettings } from "@/features/ledger/model"
+import { getDefaultLifeFlowCategories } from "@/features/ledger/lifeFlowCategories"
+import type {
+  AutoReviewRule,
+  LifeFlowCategory,
+  Transaction,
+  UserSettings,
+} from "@/features/ledger/model"
 
 const STORAGE_KEY = "fire-tracker:app-data"
 
 type AppStorageV1 = {
   version: 1
   userSettings: UserSettings | null
-  transactions: []
-  categories: []
-  autoReviewRules: []
+  transactions: Transaction[]
+  lifeFlowCategories: LifeFlowCategory[]
+  autoReviewRules: AutoReviewRule[]
 }
 
 function isBrowser() {
@@ -19,9 +25,23 @@ function createDefaultData(): AppStorageV1 {
     version: 1,
     userSettings: null,
     transactions: [],
-    categories: [],
+    lifeFlowCategories: getDefaultLifeFlowCategories(),
     autoReviewRules: [],
   }
+}
+
+// 确保默认生命流向分类
+function ensureDefaultCategories(data: AppStorageV1): AppStorageV1 {
+  if (data.lifeFlowCategories.length > 0) {
+    return data
+  }
+
+  const initialized = {
+    ...data,
+    lifeFlowCategories: getDefaultLifeFlowCategories(),
+  }
+  saveRaw(initialized)
+  return initialized
 }
 
 function loadRaw(): AppStorageV1 {
@@ -31,25 +51,32 @@ function loadRaw(): AppStorageV1 {
 
   const rawData = localStorage.getItem(STORAGE_KEY)
   if (!rawData) {
-    return createDefaultData()
+    const defaultData = createDefaultData()
+    saveRaw(defaultData)
+    return defaultData
   }
 
   try {
     const parsed = JSON.parse(rawData) as Partial<AppStorageV1>
     if (parsed.version !== 1) {
-      return createDefaultData()
+      const defaultData = createDefaultData()
+      saveRaw(defaultData)
+      return defaultData
     }
 
-    // 确保即使解析成功，也有默认的空数组兜底
-    return {
+    const data: AppStorageV1 = {
       version: 1,
       userSettings: parsed.userSettings ?? null,
       transactions: parsed.transactions ?? [],
-      categories: parsed.categories ?? [],
+      lifeFlowCategories: parsed.lifeFlowCategories ?? [],
       autoReviewRules: parsed.autoReviewRules ?? [],
     }
+
+    return ensureDefaultCategories(data)
   } catch {
-    return createDefaultData()
+    const defaultData = createDefaultData()
+    saveRaw(defaultData)
+    return defaultData
   }
 }
 
@@ -84,6 +111,36 @@ export function saveUserSettings(userSettings: Omit<UserSettings, "id">) {
     }
   }
 
+  saveRaw(data)
+}
+
+export function getTransactions(): Transaction[] {
+  return loadRaw().transactions
+}
+
+export function saveTransactions(transactions: Transaction[]) {
+  const data = loadRaw()
+  data.transactions = transactions
+  saveRaw(data)
+}
+
+export function getLifeFlowCategories(): LifeFlowCategory[] {
+  return loadRaw().lifeFlowCategories
+}
+
+export function saveLifeFlowCategories(lifeFlowCategories: LifeFlowCategory[]) {
+  const data = loadRaw()
+  data.lifeFlowCategories = lifeFlowCategories
+  saveRaw(data)
+}
+
+export function getAutoReviewRules(): AutoReviewRule[] {
+  return loadRaw().autoReviewRules
+}
+
+export function saveAutoReviewRules(autoReviewRules: AutoReviewRule[]) {
+  const data = loadRaw()
+  data.autoReviewRules = autoReviewRules
   saveRaw(data)
 }
 
