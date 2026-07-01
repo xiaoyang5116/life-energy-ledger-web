@@ -9,10 +9,7 @@
     "typescript",
     "typescriptreact"
   ], // 验证工具
-  "tailwindCSS.classFunctions": [
-    "cn",
-    "cva"
-  ], // Tailwind CSS 的类函数配置
+  "tailwindCSS.classFunctions": ["cn", "cva"], // Tailwind CSS 的类函数配置
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit" // 保存时自动修复 ESLint 错误
   },
@@ -35,6 +32,9 @@
   "files.exclude": {
     "node_modules": true, // 排除 node_modules 目录
     ".tanstack": true, // 排除 tanstack 文件夹
-    ".zed": true, // 排除 zed 文件夹
+    ".zed": true // 排除 zed 文件夹
   },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  } // 文件关联配置
 }
