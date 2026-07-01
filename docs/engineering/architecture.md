@@ -35,7 +35,7 @@ src/
 ├── features/
 │   ├── ledger/
 │   │   ├── model.ts            # 领域类型
-│   │   ├── categories.ts       # 默认生命流向分类常量
+│   │   ├── lifeFlowCategories.ts       # 默认生命流向分类常量
 │   │   ├── description-key.ts  # descriptionKey 标准化
 │   │   ├── auto-review.ts      # 自动复盘规则匹配 + 金额异常判断
 │   │   ├── stats.ts            # 基于 statEffect 的统计纯函数
@@ -111,4 +111,3 @@ routes → features → lib
 4. 待复盘页（按 `descriptionKey` 分组 + 第一次复盘 + 生成规则）
 5. 自动复盘匹配
 6. 首页统计
-

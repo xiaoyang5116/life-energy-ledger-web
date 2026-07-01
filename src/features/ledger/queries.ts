@@ -54,8 +54,8 @@ export function useSaveLifeFlowCategories() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (categories: LifeFlowCategory[]) => {
-      saveLifeFlowCategories(categories)
+    mutationFn: async (lifeFlowCategories: LifeFlowCategory[]) => {
+      saveLifeFlowCategories(lifeFlowCategories)
       return getLifeFlowCategories()
     },
     onSuccess: (data) => {

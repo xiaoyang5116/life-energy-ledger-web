@@ -131,5 +131,7 @@ export const DEFAULT_LIFE_FLOW_CATEGORIES: LifeFlowCategory[] = [
 ]
 
 export function getDefaultLifeFlowCategories(): LifeFlowCategory[] {
-  return DEFAULT_LIFE_FLOW_CATEGORIES.map((category) => ({ ...category }))
+  return DEFAULT_LIFE_FLOW_CATEGORIES.map((lifeFlowCategory) => ({
+    ...lifeFlowCategory,
+  }))
 }
