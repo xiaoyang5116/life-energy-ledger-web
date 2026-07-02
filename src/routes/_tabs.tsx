@@ -1,6 +1,8 @@
+import { FloatingBubble } from "@/components/layout/floating-bubble"
 import { Tabbar, type TabItem } from "@/components/layout/tabbar"
+import { Button } from "@/components/ui/button"
 import { createFileRoute, Outlet } from "@tanstack/react-router"
-import { House, Settings, ChartNoAxesColumn } from "lucide-react"
+import { House, Settings, ChartNoAxesColumn, Plus } from "lucide-react"
 
 export const Route = createFileRoute("/_tabs")({
   component: RouteComponent,
@@ -22,6 +24,21 @@ function RouteComponent() {
 
       {/* 底部固定 Tabbar 外壳 */}
       <Tabbar items={tabs} />
+
+      <FloatingBubble
+        bottomInset={90}
+        defaultOffsetY={30}
+        onClick={() => {
+          // TODO: 跳转记录一笔
+        }}
+      >
+        <Button
+          variant="default"
+          className="pointer-events-none flex size-full items-center justify-center rounded-full"
+        >
+          <Plus className="size-8" />
+        </Button>
+      </FloatingBubble>
     </div>
   )
 }
