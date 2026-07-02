@@ -1,8 +1,11 @@
+import { useState } from "react"
+
 import { FloatingBubble } from "@/components/layout/floating-bubble"
 import { Tabbar, type TabItem } from "@/components/layout/tabbar"
 import { Button } from "@/components/ui/button"
 import { createFileRoute, Outlet } from "@tanstack/react-router"
 import { House, Settings, ChartNoAxesColumn, Plus } from "lucide-react"
+import { RecordDrawer } from "@/components/layout/record-drawer"
 
 export const Route = createFileRoute("/_tabs")({
   component: RouteComponent,
@@ -15,6 +18,8 @@ const tabs: TabItem[] = [
 ]
 
 function RouteComponent() {
+  const [recordDrawerOpen, setRecordDrawerOpen] = useState(false)
+
   return (
     <div className="relative min-h-svh bg-background pb-[calc(var(--tabbar-height)+env(safe-area-inset-bottom))] [--tabbar-height:60px]">
       {/* 顶部主内容视口 */}
@@ -28,9 +33,7 @@ function RouteComponent() {
       <FloatingBubble
         bottomInset={90}
         defaultOffsetY={30}
-        onClick={() => {
-          // TODO: 跳转记录一笔
-        }}
+        onClick={() => setRecordDrawerOpen(true)}
       >
         <Button
           variant="default"
@@ -39,6 +42,13 @@ function RouteComponent() {
           <Plus className="size-8" />
         </Button>
       </FloatingBubble>
+
+      <RecordDrawer
+        open={recordDrawerOpen}
+        onOpenChange={() => {
+          setRecordDrawerOpen((prev) => !prev)
+        }}
+      />
     </div>
   )
 }
