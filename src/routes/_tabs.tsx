@@ -28,7 +28,7 @@ function RouteComponent() {
               to={tab.to}
               // hash-routing 或 exact 匹配模式，TanStack 默认能完美处理 active 状态
               activeOptions={{ exact: true }}
-              viewTransition
+              replace
               className="flex h-full flex-1 flex-col items-center justify-center gap-1 text-muted-foreground transition-colors"
             >
               {/* 利用回调渲染函数，当该路由激活时自动变换样式 */}
