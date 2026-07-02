@@ -15,7 +15,7 @@ export function AmountKeypad({
   handleConfirm,
 }: AmountKeypadProps) {
   return (
-    <div className="grid grid-cols-4 grid-rows-4 gap-2 p-3 select-none">
+    <div className="grid grid-cols-4 grid-rows-4 gap-2 p-3 select-none [--keypad-height:40px]">
       {KEYPAD_KEYS.map((key) => {
         if (key === "delete") {
           return (
@@ -23,7 +23,7 @@ export function AmountKeypad({
               key={key}
               type="button"
               onClick={handleDelete}
-              className="flex h-14 items-center justify-center rounded-lg bg-muted active:bg-muted/70"
+              className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted active:bg-muted/70"
               aria-label="删除"
             >
               <Delete className="size-6" />
@@ -37,7 +37,7 @@ export function AmountKeypad({
               key={key}
               type="button"
               onClick={() => {}}
-              className="flex h-14 items-center justify-center rounded-lg bg-muted text-xl font-medium active:bg-muted/70"
+              className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-base font-medium active:bg-muted/70"
               aria-label="再记"
             >
               再记
@@ -50,7 +50,7 @@ export function AmountKeypad({
             key={key}
             type="button"
             onClick={() => handleKeyPress(key)}
-            className="flex h-14 items-center justify-center rounded-lg bg-muted text-2xl font-medium active:bg-muted/70"
+            className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-xl font-medium active:bg-muted/70"
           >
             {key}
           </button>
