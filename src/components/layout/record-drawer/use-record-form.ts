@@ -4,9 +4,7 @@ export type UseRecordFormOptions = {
   onSubmitted?: () => void // 提交成功后（如关闭 Drawer / 再记）
 }
 
-export function useRecordForm() {
-  // date, calendarOpen, amount, description, isGhost
-
+export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   const [date, setDate] = useState<Date>(new Date())
 
   // 控制日期选择弹层的开关，便于选完日期后自动收起。
@@ -19,7 +17,8 @@ export function useRecordForm() {
   const [description, setDescription] = useState("")
 
   // 幽灵账：遇到突发状况时先挂起、暂不正式记入。此处只做开关 UI 状态。
-  const [isGhost, toggleGhost] = useState(false)
+  const [isGhost, setIsGhost] = useState(false)
+  const toggleGhost = () => setIsGhost((prev) => !prev)
 
   const displayAmount = amount || "0"
 
@@ -44,7 +43,9 @@ export function useRecordForm() {
   // - 计算 energyHours、descriptionKey、reviewStatus
   // - isGhost 为 true 时按“挂起/暂不记入”处理
   // - 金额为空或为 0 时禁止提交
-  function handleConfirm() {}
+  function handleConfirm() {
+    onSubmitted?.()
+  }
 
   function handleQuickTag(tag: string) {
     // TODO(交互): 确认填充策略（覆盖 / 追加 / 生成 descriptionKey）
