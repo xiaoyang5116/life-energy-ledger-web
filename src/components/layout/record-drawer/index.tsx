@@ -12,6 +12,7 @@ import { EnergyBadge } from "@/components/layout/record-drawer/parts/energy-badg
 import { DescriptionInput } from "@/components/layout/record-drawer/parts/description-input"
 import { GhostToggle } from "@/components/layout/record-drawer/parts/ghost-toggle"
 import { AmountKeypad } from "@/components/layout/record-drawer/parts/amount-keypad"
+import { QuickTags } from "@/components/layout/record-drawer/parts/quick-tags"
 
 type RecordDrawerProps = {
   open: boolean
@@ -19,61 +20,51 @@ type RecordDrawerProps = {
 }
 
 export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
-  const {
-    displayAmount,
-    description,
-    date,
-    setDate,
-    calendarOpen,
-    setCalendarOpen,
-    setDescription,
-    isGhost,
-    toggleGhost,
-    lifeEnergyHoursText,
-    handleKeyPress,
-    handleDelete,
-    handleConfirm,
-    handleQuickTag,
-  } = useRecordForm()
+  const recordForm = useRecordForm({ onSubmitted: () => onOpenChange(false) })
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="pb-[env(safe-area-inset-bottom)]">
+        {/* 头部 */}
         <DrawerHeader className="items-end pb-0">
           <DrawerTitle className="sr-only">记录一笔</DrawerTitle>
+          {/* 日期选择器 */}
           <RecordDatePicker
-            calendarOpen={calendarOpen}
-            setCalendarOpen={setCalendarOpen}
-            date={date}
-            setDate={setDate}
+            calendarOpen={recordForm.calendarOpen}
+            setCalendarOpen={recordForm.setCalendarOpen}
+            date={recordForm.date}
+            setDate={recordForm.setDate}
           />
         </DrawerHeader>
 
         <div className="flex flex-col gap-4 px-4 pt-2">
           {/* 金额展示 */}
-          <AmountDisplay displayAmount={displayAmount} />
+          <AmountDisplay displayAmount={recordForm.displayAmount} />
 
           {/* 生命能量胶囊 */}
-          <EnergyBadge lifeEnergyHoursText={lifeEnergyHoursText} />
+          <EnergyBadge lifeEnergyHoursText={recordForm.lifeEnergyHoursText} />
 
           {/* 描述输入 + 相机（相机暂为占位） */}
           <DescriptionInput
-            description={description}
-            setDescription={setDescription}
+            description={recordForm.description}
+            setDescription={recordForm.setDescription}
           />
 
           {/* 快捷标签 + 幽灵账开关 */}
-          <GhostToggle
-            isGhost={isGhost}
-            toggleGhost={toggleGhost}
-            handleQuickTag={handleQuickTag}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <QuickTags handleQuickTag={recordForm.handleQuickTag} />
+            <GhostToggle
+              isGhost={recordForm.isGhost}
+              toggleGhost={recordForm.toggleGhost}
+            />
+          </div>
         </div>
 
         {/* 数字键盘 */}
         <AmountKeypad
-          handleDelete={handleDelete}
-          handleKeyPress={handleKeyPress}
-          handleConfirm={handleConfirm}
+          handleDelete={recordForm.handleDelete}
+          handleKeyPress={recordForm.handleKeyPress}
+          handleConfirm={recordForm.handleConfirm}
         />
       </DrawerContent>
     </Drawer>
