@@ -6,16 +6,18 @@ import { KEYPAD_KEYS } from "@/components/layout/record-drawer/constants"
 type AmountKeypadProps = {
   handleDelete: () => void
   handleKeyPress: (key: string) => void
+  handleAgain: () => void
   handleConfirm: () => void
 }
 
 export function AmountKeypad({
   handleDelete,
   handleKeyPress,
+  handleAgain,
   handleConfirm,
 }: AmountKeypadProps) {
   return (
-    <div className="grid grid-cols-4 grid-rows-4 gap-2 p-3 select-none [--keypad-height:40px]">
+    <div className="grid grid-cols-4 grid-rows-4 gap-2 p-3 select-none [--keypad-height:52px]">
       {KEYPAD_KEYS.map((key) => {
         if (key === "delete") {
           return (
@@ -36,7 +38,7 @@ export function AmountKeypad({
             <button
               key={key}
               type="button"
-              onClick={() => {}}
+              onClick={handleAgain}
               className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-base font-medium active:bg-muted/70"
               aria-label="再记"
             >

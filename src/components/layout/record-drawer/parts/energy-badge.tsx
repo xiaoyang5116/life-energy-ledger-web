@@ -10,7 +10,7 @@ export function EnergyBadge({
   return (
     <div className="flex justify-center">
       <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
-        <Hourglass className="size-3.5" />≈ {lifeEnergyHoursText} 小时生命能量
+        <Hourglass className="size-3.5" />≈ {lifeEnergyHoursText}
       </span>
     </div>
   )

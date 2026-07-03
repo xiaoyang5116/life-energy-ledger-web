@@ -3,7 +3,7 @@
 export const QUICK_TAGS = ["续命咖啡", "加班打车", "外卖"]
 
 // 数字键盘按键，按网格从左到右、从上到下排列。
-// "delete" 为删除键、"collapse" 为收起键，其余为数字/小数点。
+// "delete" 为删除键、"collapse" 为收起键、"again" 为再记键，其余为数字/小数点。
 // 顺序保证第 1 行为 1 2 3 ⌫，最后一行为 . 0 ⌄；右侧确认键单独定位。
 export const KEYPAD_KEYS = [
   "1",

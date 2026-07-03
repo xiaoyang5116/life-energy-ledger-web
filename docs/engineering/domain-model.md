@@ -24,6 +24,7 @@ type RawTransaction = {
   id: string
   date: string
   amount: number
+  realHourlyWage: number
   energyHours: number
   description: string
   descriptionKey: string
@@ -40,6 +41,7 @@ type RawTransaction = {
 | `id`                      | 记录 ID                              |
 | `date`                    | 发生日期，用于按天、月统计           |
 | `amount`                  | 用户输入金额，统一为正数             |
+| `realHourlyWage`          | 记录创建时的真实时薪快照，保证历史 `energyHours` 可追溯且不被后续时薪调整改写 |
 | `energyHours`             | 金额按真实时薪换算出的生命能量       |
 | `description`             | 用户输入的原始描述                   |
 | `descriptionKey`          | 标准化后的描述，用于匹配自动复盘规则 |
@@ -255,6 +257,7 @@ CREATE TABLE transactions (
   id TEXT PRIMARY KEY,
   date TEXT NOT NULL,
   amount REAL NOT NULL,
+  real_hourly_wage REAL NOT NULL,
   energy_hours REAL NOT NULL,
   description TEXT NOT NULL,
   description_key TEXT NOT NULL,

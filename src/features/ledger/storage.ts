@@ -5,6 +5,7 @@ import type {
   Transaction,
   UserSettings,
 } from "@/features/ledger/model"
+import { createId } from "@/lib/utils"
 
 const STORAGE_KEY = "fire-tracker:app-data"
 
@@ -142,15 +143,4 @@ export function saveAutoReviewRules(autoReviewRules: AutoReviewRule[]) {
   const data = loadRaw()
   data.autoReviewRules = autoReviewRules
   saveRaw(data)
-}
-
-/** 创建 ID */
-function createId() {
-  if (crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-  return (
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15)
-  )
 }

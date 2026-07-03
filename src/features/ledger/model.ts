@@ -37,6 +37,8 @@ export type RawTransaction = {
   date: string
   /** 用户输入金额，始终保存为正数 */
   amount: number
+  /** 记录创建时的真实时薪快照，用于追溯 energyHours 的换算依据；时薪变化不影响历史记录 */
+  realHourlyWage: number
   /** 金额按真实时薪换算出的生命能量小时数 */
   energyHours: number
   /** 用户输入的原始描述 */

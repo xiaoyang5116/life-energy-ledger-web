@@ -47,7 +47,7 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
           {/* 描述输入 + 相机（相机暂为占位） */}
           <DescriptionInput
             description={recordForm.description}
-            setDescription={recordForm.setDescription}
+            handleDescription={recordForm.handleDescription}
           />
 
           {/* 快捷标签 + 幽灵账开关 */}
@@ -65,6 +65,7 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
           handleDelete={recordForm.handleDelete}
           handleKeyPress={recordForm.handleKeyPress}
           handleConfirm={recordForm.handleConfirm}
+          handleAgain={recordForm.handleAgain}
         />
       </DrawerContent>
     </Drawer>

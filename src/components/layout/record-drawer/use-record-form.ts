@@ -1,10 +1,25 @@
 import { useState } from "react"
+import { useNavigate } from "@tanstack/react-router"
+import { toast } from "sonner"
+
+import { appendAmountKey, deleteAmountKey } from "@/features/ledger/amount"
+import { toEnergyHours } from "@/features/ledger/energy"
+import { useUserSettings } from "@/features/settings/queries"
+import { createRawTransaction } from "@/features/ledger/transaction"
+import { useSaveTransactions } from "@/features/ledger/queries"
 
 export type UseRecordFormOptions = {
-  onSubmitted?: () => void // 提交成功后（如关闭 Drawer / 再记）
+  onSubmitted: () => void // 提交成功后（如关闭 Drawer / 再记）
 }
 
 export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
+  const userSettings = useUserSettings()
+  const realHourlyWage = userSettings.data?.realHourlyWage ?? 0
+  const hasWage = realHourlyWage > 0
+
+  const { mutate: saveTransactionsMutate } = useSaveTransactions()
+  const navigate = useNavigate()
+
   const [date, setDate] = useState<Date>(new Date())
 
   // 控制日期选择弹层的开关，便于选完日期后自动收起。
@@ -20,23 +35,55 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   const [isGhost, setIsGhost] = useState(false)
   const toggleGhost = () => setIsGhost((prev) => !prev)
 
-  const displayAmount = amount || "0"
+  const displayAmount = amount || "0" // 金额字符串
+  const numericAmount = Number(displayAmount) // 金额数值
 
-  // TODO(交互): 生命能量 = amount / realHourlyWage（真实时薪来自 user_settings）。
-  // 现仅占位展示，接入设置后替换为真实换算。
-  const lifeEnergyHoursText = "0.8"
+  const canSubmit = numericAmount > 0 && hasWage // 是否可提交
+
+  // 生命能量小时数
+  const lifeEnergyHoursText: string = hasWage
+    ? `${toEnergyHours(Number(amount), realHourlyWage).toFixed(1)} 小时生命能量`
+    : "设置真实时薪后可预估生命能量"
+
+  function submit() {
+    // if (!hasWage) { 弹 toast 引导去设置; return false }
+    if (!hasWage) {
+      toast.error("请先设置真实时薪", {
+        position: "top-center",
+        action: {
+          label: "去设置",
+          onClick: () => navigate({ to: "/setting" }),
+        },
+      })
+    }
+    // if (numericAmount <= 0) return false（金额为 0 时静默拦下）
+    if (numericAmount <= 0) {
+      return
+    }
+
+    // createRawTransaction
+    const now = new Date()
+    const rawTransaction = createRawTransaction(
+      {
+        date: date,
+        amount: Number(amount),
+        description,
+        realHourlyWage: userSettings.data?.realHourlyWage ?? 0,
+      },
+      now
+    )
+    console.log("rawTransaction", rawTransaction)
+  }
 
   function handleKeyPress(key: string) {
-    // TODO(交互): 补充输入校验
-    // - 只允许一个小数点
-    // - 小数最多 2 位
-    // - 禁止 "0" 后再接数字（如 08 非法），但允许 "0."
-    setAmount((prev) => prev + key)
+    setAmount((prev) => appendAmountKey(prev, key))
   }
 
   function handleDelete() {
-    setAmount((prev) => prev.slice(0, -1))
+    setAmount((prev) => deleteAmountKey(prev))
   }
+
+  function handleAgain() {}
 
   // TODO(交互): 提交记录
   // - 生成 RawTransaction（date / amount / description + 系统字段）
@@ -44,7 +91,12 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   // - isGhost 为 true 时按“挂起/暂不记入”处理
   // - 金额为空或为 0 时禁止提交
   function handleConfirm() {
-    onSubmitted?.()
+    submit()
+    // onSubmitted()
+  }
+
+  function handleDescription(prev: string) {
+    setDescription(prev)
   }
 
   function handleQuickTag(tag: string) {
@@ -59,14 +111,16 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
     setCalendarOpen,
     displayAmount, // amount || "0"
     description,
-    setDescription,
+    // setDescription,
     isGhost,
     toggleGhost,
-    lifeEnergyHoursText, // 暂时占位 "0.8"，未来接真实时薪
+    lifeEnergyHoursText,
     // canSubmit, // amount 非空且 > 0，供确认键 disabled 用
     handleKeyPress,
     handleDelete,
+    handleAgain,
     handleConfirm,
+    handleDescription,
     handleQuickTag,
   }
 }

@@ -5,16 +5,16 @@ import { Input } from "@/components/ui/input"
 
 export function DescriptionInput({
   description,
-  setDescription,
+  handleDescription,
 }: {
   description: string
-  setDescription: (description: string) => void
+  handleDescription: (prev: string) => void
 }) {
   return (
     <div className="relative">
       <Input
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => handleDescription(e.target.value)}
         placeholder="这一笔钱变成了什么？"
         className="h-11 pr-11 text-base"
       />
