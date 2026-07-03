@@ -42,7 +42,11 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
           <AmountDisplay displayAmount={recordForm.displayAmount} />
 
           {/* 生命能量胶囊 */}
-          <EnergyBadge lifeEnergyHoursText={recordForm.lifeEnergyHoursText} />
+          <EnergyBadge
+            hasWage={recordForm.hasWage}
+            onWageClick={recordForm.onWageClick}
+            lifeEnergyHoursText={recordForm.lifeEnergyHoursText}
+          />
 
           {/* 描述输入 + 相机（相机暂为占位） */}
           <DescriptionInput

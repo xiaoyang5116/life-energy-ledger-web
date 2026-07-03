@@ -43,7 +43,12 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   // 生命能量小时数
   const lifeEnergyHoursText: string = hasWage
     ? `${toEnergyHours(Number(amount), realHourlyWage).toFixed(1)} 小时生命能量`
-    : "设置真实时薪后可预估生命能量"
+    : "点击此处设置真实时薪后可预估生命能量"
+
+  function onWageClick() {
+    onSubmitted()
+    navigate({ to: "/setting" })
+  }
 
   function submit() {
     // if (!hasWage) { 弹 toast 引导去设置; return false }
@@ -105,6 +110,8 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   }
 
   return {
+    hasWage,
+    onWageClick,
     date,
     setDate,
     calendarOpen,
