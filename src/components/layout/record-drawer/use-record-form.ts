@@ -6,7 +6,7 @@ import { appendAmountKey, deleteAmountKey } from "@/features/ledger/amount"
 import { toEnergyHours } from "@/features/ledger/energy"
 import { useUserSettings } from "@/features/settings/queries"
 import { createRawTransaction } from "@/features/ledger/transaction"
-import { useSaveTransactions } from "@/features/ledger/queries"
+// import { useSaveTransactions } from "@/features/ledger/queries"
 
 export type UseRecordFormOptions = {
   onSubmitted: () => void // 提交成功后（如关闭 Drawer / 再记）
@@ -17,7 +17,7 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   const realHourlyWage = userSettings.data?.realHourlyWage ?? 0
   const hasWage = realHourlyWage > 0
 
-  const { mutate: saveTransactionsMutate } = useSaveTransactions()
+  // const { mutate: saveTransactionsMutate } = useSaveTransactions()
   const navigate = useNavigate()
 
   const [date, setDate] = useState<Date>(new Date())
@@ -38,7 +38,7 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   const displayAmount = amount || "0" // 金额字符串
   const numericAmount = Number(displayAmount) // 金额数值
 
-  const canSubmit = numericAmount > 0 && hasWage // 是否可提交
+  // const canSubmit = numericAmount > 0 && hasWage // 是否可提交
 
   // 生命能量小时数
   const lifeEnergyHoursText: string = hasWage
