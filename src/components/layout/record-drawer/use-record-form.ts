@@ -6,7 +6,7 @@ import { appendAmountKey, deleteAmountKey } from "@/features/ledger/amount"
 import { toEnergyHours } from "@/features/ledger/energy"
 import { useUserSettings } from "@/features/settings/queries"
 import { createRawTransaction } from "@/features/ledger/transaction"
-// import { useSaveTransactions } from "@/features/ledger/queries"
+import { useAppendTransactions } from "@/features/ledger/queries"
 
 export type UseRecordFormOptions = {
   onSubmitted: () => void // 提交成功后（如关闭 Drawer / 再记）
@@ -17,7 +17,8 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   const realHourlyWage = userSettings.data?.realHourlyWage ?? 0
   const hasWage = realHourlyWage > 0
 
-  // const { mutate: saveTransactionsMutate } = useSaveTransactions()
+  const { mutate: appendTransactionsMutate, isPending: isAppending } =
+    useAppendTransactions()
   const navigate = useNavigate()
 
   const [date, setDate] = useState<Date>(new Date())
@@ -38,8 +39,6 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
   const displayAmount = amount || "0" // 金额字符串
   const numericAmount = Number(displayAmount) // 金额数值
 
-  // const canSubmit = numericAmount > 0 && hasWage // 是否可提交
-
   // 生命能量小时数
   const lifeEnergyHoursText: string = hasWage
     ? `${toEnergyHours(Number(amount), realHourlyWage).toFixed(1)} 小时生命能量`
@@ -50,8 +49,7 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
     navigate({ to: "/setting" })
   }
 
-  function submit() {
-    // if (!hasWage) { 弹 toast 引导去设置; return false }
+  function submit(mode: "close" | "again") {
     if (!hasWage) {
       toast.error("请先设置真实时薪", {
         position: "top-center",
@@ -60,24 +58,63 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
           onClick: () => navigate({ to: "/setting" }),
         },
       })
-    }
-    // if (numericAmount <= 0) return false（金额为 0 时静默拦下）
-    if (numericAmount <= 0) {
+
       return
     }
 
-    // createRawTransaction
+    if (numericAmount <= 0) {
+      toast.error("请输入金额", {
+        position: "top-center",
+      })
+      return
+    }
+
+    if (description.trim() === "") {
+      toast.error("请输入描述", {
+        position: "top-center",
+      })
+      return
+    }
+
+    if (isAppending) return
+
     const now = new Date()
     const rawTransaction = createRawTransaction(
       {
         date: date,
-        amount: Number(amount),
-        description,
+        amount: numericAmount,
+        description: description.trim(),
         realHourlyWage: userSettings.data?.realHourlyWage ?? 0,
       },
       now
     )
-    console.log("rawTransaction", rawTransaction)
+
+    appendTransactionsMutate(rawTransaction, {
+      onSuccess: () => {
+        toast.success(
+          "记录成功: " +
+            rawTransaction.description +
+            " " +
+            rawTransaction.amount,
+          {
+            position: "top-center",
+          }
+        )
+
+        if (mode === "close") {
+          reset()
+          onSubmitted()
+        } else if (mode === "again") {
+          reset()
+        }
+      },
+      onError: (error) => {
+        console.error(error)
+        toast.error("记录失败", {
+          position: "top-center",
+        })
+      },
+    })
   }
 
   function handleKeyPress(key: string) {
@@ -88,16 +125,20 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
     setAmount((prev) => deleteAmountKey(prev))
   }
 
-  function handleAgain() {}
+  function reset() {
+    setAmount("")
+    setDescription("")
+    setIsGhost(false)
+    setDate(new Date())
+    setCalendarOpen(false)
+  }
 
-  // TODO(交互): 提交记录
-  // - 生成 RawTransaction（date / amount / description + 系统字段）
-  // - 计算 energyHours、descriptionKey、reviewStatus
-  // - isGhost 为 true 时按“挂起/暂不记入”处理
-  // - 金额为空或为 0 时禁止提交
+  function handleAgain() {
+    submit("again")
+  }
+
   function handleConfirm() {
-    submit()
-    // onSubmitted()
+    submit("close")
   }
 
   function handleDescription(prev: string) {
@@ -111,6 +152,7 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
 
   return {
     hasWage,
+    isAppending,
     onWageClick,
     date,
     setDate,
@@ -118,11 +160,9 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
     setCalendarOpen,
     displayAmount, // amount || "0"
     description,
-    // setDescription,
     isGhost,
     toggleGhost,
     lifeEnergyHoursText,
-    // canSubmit, // amount 非空且 > 0，供确认键 disabled 用
     handleKeyPress,
     handleDelete,
     handleAgain,

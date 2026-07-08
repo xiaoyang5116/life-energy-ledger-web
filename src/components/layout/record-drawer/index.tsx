@@ -24,7 +24,10 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="pb-[env(safe-area-inset-bottom)]">
+      <DrawerContent
+        className="pb-[env(safe-area-inset-bottom)]"
+        aria-busy={recordForm.isAppending}
+      >
         {/* 头部 */}
         <DrawerHeader className="items-end pb-0">
           <DrawerTitle className="sr-only">记录一笔</DrawerTitle>
@@ -34,6 +37,7 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
             setCalendarOpen={recordForm.setCalendarOpen}
             date={recordForm.date}
             setDate={recordForm.setDate}
+            isAppending={recordForm.isAppending}
           />
         </DrawerHeader>
 
@@ -52,14 +56,19 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
           <DescriptionInput
             description={recordForm.description}
             handleDescription={recordForm.handleDescription}
+            isAppending={recordForm.isAppending}
           />
 
           {/* 快捷标签 + 幽灵账开关 */}
           <div className="flex items-center justify-between gap-2">
-            <QuickTags handleQuickTag={recordForm.handleQuickTag} />
+            <QuickTags
+              handleQuickTag={recordForm.handleQuickTag}
+              isAppending={recordForm.isAppending}
+            />
             <GhostToggle
               isGhost={recordForm.isGhost}
               toggleGhost={recordForm.toggleGhost}
+              isAppending={recordForm.isAppending}
             />
           </div>
         </div>
@@ -70,6 +79,7 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
           handleKeyPress={recordForm.handleKeyPress}
           handleConfirm={recordForm.handleConfirm}
           handleAgain={recordForm.handleAgain}
+          isAppending={recordForm.isAppending}
         />
       </DrawerContent>
     </Drawer>

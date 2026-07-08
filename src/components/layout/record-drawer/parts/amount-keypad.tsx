@@ -1,9 +1,10 @@
 // 数字键盘 + 确认键
 
-import { Check, Delete } from "lucide-react"
+import { Check, Delete, Loader2 } from "lucide-react"
 import { KEYPAD_KEYS } from "@/components/layout/record-drawer/constants"
 
 type AmountKeypadProps = {
+  isAppending: boolean
   handleDelete: () => void
   handleKeyPress: (key: string) => void
   handleAgain: () => void
@@ -11,6 +12,7 @@ type AmountKeypadProps = {
 }
 
 export function AmountKeypad({
+  isAppending,
   handleDelete,
   handleKeyPress,
   handleAgain,
@@ -25,7 +27,8 @@ export function AmountKeypad({
               key={key}
               type="button"
               onClick={handleDelete}
-              className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted active:bg-muted/70"
+              disabled={isAppending}
+              className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted active:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="删除"
             >
               <Delete className="size-6" />
@@ -38,8 +41,9 @@ export function AmountKeypad({
             <button
               key={key}
               type="button"
+              disabled={isAppending}
               onClick={handleAgain}
-              className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-base font-medium active:bg-muted/70"
+              className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-base font-medium active:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
               aria-label="再记"
             >
               再记
@@ -51,8 +55,9 @@ export function AmountKeypad({
           <button
             key={key}
             type="button"
+            disabled={isAppending}
             onClick={() => handleKeyPress(key)}
-            className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-xl font-medium active:bg-muted/70"
+            className="flex h-(--keypad-height) items-center justify-center rounded-lg bg-muted text-xl font-medium active:bg-muted/70 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {key}
           </button>
@@ -63,10 +68,15 @@ export function AmountKeypad({
       <button
         type="button"
         onClick={handleConfirm}
-        className="col-start-4 row-span-3 row-start-2 flex flex-col items-center justify-center gap-1 rounded-lg bg-foreground text-background active:opacity-90"
+        disabled={isAppending}
+        className="col-start-4 row-span-3 row-start-2 flex flex-col items-center justify-center gap-1 rounded-lg bg-foreground text-background active:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        <Check className="size-6" />
-        <span className="text-sm">确认</span>
+        {isAppending ? (
+          <Loader2 className="size-6 animate-spin" />
+        ) : (
+          <Check className="size-6" />
+        )}
+        <span className="text-sm">{isAppending ? "保存中" : "确认"}</span>
       </button>
     </div>
   )

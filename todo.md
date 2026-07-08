@@ -2,6 +2,10 @@
 
 > **当前优先级（S1 垂直切片）**：接通录入持久化 → 提交反馈 → 手动验证「记一笔后刷新仍在」。
 
+## bugs
+
+- [] 抽屉遮罩层 在 toast 之上，点击 去设置 其实是关闭抽屉遮罩层，而不是打开设置页
+
 ## 已完成
 
 - [x] 搭建 React + TypeScript + Vite 基础项目
@@ -19,13 +23,14 @@
 - [x] 金额解析纯函数（`amount.ts`），提交时按正数处理
 - [x] 根据真实时薪计算 `energyHours`（`energy.ts`，录入时实时预览）
 - [x] 生成 `descriptionKey`（`descriptionKey.ts`，`createRawTransaction` 已调用）
-- [x] `createRawTransaction` 纯函数（固定 `reviewStatus: "unreviewed"`）
+- [x] `createRawTransaction` 纯函数（固定 `reviewStatus: "unreviewed"`）、
+- [x] 接通 `useSaveTransactions`，确认后真正写入 localStorage
+- [x] 提交成功 toast 反馈与「再记」清空表单
+- [x] 幽灵账业务语义（UI 开关已有，挂起逻辑未实现）
 
 ## 进行中
 
-- [ ] 接通 `useSaveTransactions`，确认后真正写入 localStorage
-- [ ] 提交成功 toast 反馈与「再记」清空表单
-- [ ] 幽灵账业务语义（UI 开关已有，挂起逻辑未实现）
+- [ ] 提交过程中禁用录入 UI（确认/再记/数字键盘），避免重复提交与状态漂移
 
 ## P0：MVP 核心闭环
 

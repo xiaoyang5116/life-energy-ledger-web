@@ -14,6 +14,7 @@ type RecordDatePickerProps = {
   setCalendarOpen: (open: boolean) => void
   date: Date
   setDate: (date: Date) => void
+  isAppending: boolean
 }
 
 export function RecordDatePicker({
@@ -21,11 +22,23 @@ export function RecordDatePicker({
   setCalendarOpen,
   date,
   setDate,
+  isAppending,
 }: RecordDatePickerProps) {
   return (
-    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+    <Popover
+      open={calendarOpen}
+      onOpenChange={(open) => {
+        if (isAppending) return
+        setCalendarOpen(open)
+      }}
+    >
       <PopoverTrigger asChild>
-        <Button variant="outline" size="lg" className="text-muted-foreground">
+        <Button
+          variant="outline"
+          size="lg"
+          disabled={isAppending}
+          className="text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        >
           <CalendarIcon className="h-4 w-4" />
           {date?.toLocaleDateString()}
         </Button>
@@ -36,6 +49,7 @@ export function RecordDatePicker({
           captionLayout="dropdown"
           selected={date}
           onSelect={(nextDate) => {
+            if (isAppending) return
             setDate(nextDate)
             setCalendarOpen(false)
           }}
