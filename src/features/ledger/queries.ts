@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
   AutoReviewRule,
   LifeFlowCategory,
+  RawTransaction,
   Transaction,
 } from "@/features/ledger/model"
 import {
@@ -34,6 +35,30 @@ export function useSaveTransactions() {
     mutationFn: async (transactions: Transaction[]) => {
       saveTransactions(transactions)
       return getTransactions()
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(transactionsQueryKey, data)
+    },
+  })
+}
+
+export function useAppendTransactions() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (transaction: RawTransaction) => {
+      const previousTransactions = getTransactions()
+
+      let newTransactions: RawTransaction[] = []
+
+      if (!previousTransactions) {
+        newTransactions = [transaction]
+      } else {
+        newTransactions = [...previousTransactions, transaction]
+      }
+
+      saveTransactions(newTransactions)
+      return newTransactions
     },
     onSuccess: (data) => {
       queryClient.setQueryData(transactionsQueryKey, data)
