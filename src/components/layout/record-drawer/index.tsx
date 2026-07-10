@@ -30,7 +30,7 @@ export function RecordDrawer({ open, onOpenChange }: RecordDrawerProps) {
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent
-        className="pb-[env(safe-area-inset-bottom)]"
+        className="pb-[env(safe-area-inset-bottom)] data-[vaul-drawer-direction=bottom]:max-h-dvh"
         aria-busy={form.derived.isSubmitting}
       >
         <RecordDrawerView
