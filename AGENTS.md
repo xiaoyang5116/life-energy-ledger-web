@@ -64,6 +64,14 @@
 - 不为“更优雅”引入额外依赖或复杂抽象；只有重复逻辑已经影响理解、测试或扩展时，才提取新抽象。
 - 保持代码可读性优先，避免聪明但难维护的写法。
 
+## Git 提交
+
+- 仅在用户明确要求时创建 commit；不要主动提交。
+- commit message 的 subject 与 body 使用简体中文。
+- 保留 Conventional Commits 的英文 type 与可选 scope，例如：`fix(record-drawer): 提高抽屉最大高度以适配录入表单`。
+- subject 使用祈使语气，不以句号结尾；body 说明做了什么以及为什么，必要时可省略 how。
+- 常用 type：`fix`、`feat`、`chore`、`docs`、`style`、`refactor`、`perf`、`test`。
+
 ## 产品与领域规则
 
 - `docs/engineering/domain-model.md` 是领域模型和统计规则的实现准绳。
