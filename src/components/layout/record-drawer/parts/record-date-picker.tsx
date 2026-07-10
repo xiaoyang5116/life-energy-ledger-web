@@ -10,33 +10,33 @@ import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
 
 type RecordDatePickerProps = {
-  calendarOpen: boolean
-  setCalendarOpen: (open: boolean) => void
   date: Date
-  setDate: (date: Date) => void
-  isAppending: boolean
+  isSubmitting: boolean
+  isCalendarOpen: boolean
+  onDateChange: (date: Date) => void
+  onCalendarOpenChange: (open: boolean) => void
 }
 
 export function RecordDatePicker({
-  calendarOpen,
-  setCalendarOpen,
   date,
-  setDate,
-  isAppending,
+  isSubmitting,
+  isCalendarOpen,
+  onDateChange,
+  onCalendarOpenChange,
 }: RecordDatePickerProps) {
   return (
     <Popover
-      open={calendarOpen}
+      open={isCalendarOpen}
       onOpenChange={(open) => {
-        if (isAppending) return
-        setCalendarOpen(open)
+        if (isSubmitting) return
+        onCalendarOpenChange(open)
       }}
     >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           size="lg"
-          disabled={isAppending}
+          disabled={isSubmitting}
           className="text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
         >
           <CalendarIcon className="h-4 w-4" />
@@ -49,9 +49,9 @@ export function RecordDatePicker({
           captionLayout="dropdown"
           selected={date}
           onSelect={(nextDate) => {
-            if (isAppending) return
-            setDate(nextDate)
-            setCalendarOpen(false)
+            if (isSubmitting) return
+            onDateChange(nextDate)
+            onCalendarOpenChange(false)
           }}
           className="[--cell-size:--spacing(10)]"
           required

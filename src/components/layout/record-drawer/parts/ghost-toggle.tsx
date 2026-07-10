@@ -4,23 +4,23 @@ import { cn } from "@/lib/utils"
 
 type GhostToggleProps = {
   isGhost: boolean
-  toggleGhost: () => void
-  isAppending: boolean
+  onGhostChange: (isGhost: boolean) => void
+  isSubmitting: boolean
 }
 
 export function GhostToggle({
   isGhost,
-  toggleGhost,
-  isAppending,
+  onGhostChange,
+  isSubmitting,
 }: GhostToggleProps) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={isGhost}
-      aria-disabled={isAppending}
-      disabled={isAppending}
-      onClick={toggleGhost}
+      aria-disabled={isSubmitting}
+      disabled={isSubmitting}
+      onClick={() => onGhostChange(!isGhost)}
       className="flex shrink-0 items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span className="text-sm text-muted-foreground select-none">幽灵账</span>

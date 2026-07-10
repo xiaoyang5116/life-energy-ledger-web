@@ -1,5 +1,5 @@
 import { toDescriptionKey } from "@/features/ledger/descriptionKey"
-import { toEnergyHours } from "@/features/ledger/energy"
+import { toLifeEnergyHours } from "@/features/ledger/energy"
 import type { RawTransaction } from "@/features/ledger/model"
 import { createId, toDateYYYYMMDD } from "@/lib/utils"
 
@@ -19,7 +19,7 @@ export function createRawTransaction(
     date: toDateYYYYMMDD(input.date),
     amount: input.amount,
     realHourlyWage: input.realHourlyWage,
-    energyHours: toEnergyHours(input.amount, input.realHourlyWage),
+    energyHours: toLifeEnergyHours(input.amount, input.realHourlyWage),
     description: input.description,
     descriptionKey: toDescriptionKey(input.description),
     reviewStatus: "unreviewed",

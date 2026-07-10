@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button"
 import { QUICK_TAGS } from "@/components/layout/record-drawer/constants"
 
 type QuickTagsProps = {
-  handleQuickTag: (tag: string) => void
-  isAppending: boolean
+  onQuickTagSelect: (tag: string) => void
+  isSubmitting: boolean
 }
 
-export function QuickTags({ handleQuickTag, isAppending }: QuickTagsProps) {
+export function QuickTags({ onQuickTagSelect, isSubmitting }: QuickTagsProps) {
   return (
     <div className="flex flex-wrap gap-2">
       {QUICK_TAGS.map((tag) => (
@@ -16,8 +16,8 @@ export function QuickTags({ handleQuickTag, isAppending }: QuickTagsProps) {
           key={tag}
           variant="outline"
           size="sm"
-          disabled={isAppending}
-          onClick={() => handleQuickTag(tag)}
+          disabled={isSubmitting}
+          onClick={() => onQuickTagSelect(tag)}
           className="disabled:cursor-not-allowed disabled:opacity-50"
         >
           {tag}

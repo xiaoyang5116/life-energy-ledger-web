@@ -3,54 +3,112 @@ import { useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 
 import { appendAmountKey, deleteAmountKey } from "@/features/ledger/amount"
-import { toEnergyHours } from "@/features/ledger/energy"
+import { toLifeEnergyHours } from "@/features/ledger/energy"
 import { useUserSettings } from "@/features/settings/queries"
 import { createRawTransaction } from "@/features/ledger/transaction"
 import { useAppendTransactions } from "@/features/ledger/queries"
 
 export type UseRecordFormOptions = {
-  onSubmitted: () => void // 提交成功后（如关闭 Drawer / 再记）
+  onSubmitSuccess: () => void // 提交成功且需要关闭录入时
 }
 
-export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
-  const userSettings = useUserSettings()
-  const realHourlyWage = userSettings.data?.realHourlyWage ?? 0
-  const hasWage = realHourlyWage > 0
+export type UseRecordFormResult = {
+  values: {
+    date: Date
+    amount: string // 用户正在编辑的金额草稿（字符串）
+    description: string
+    isGhost: boolean
+  }
+  ui: {
+    isCalendarOpen: boolean
+  }
+  derived: {
+    displayAmount: string // amount || "0"，专供展示
+    amountValue: number // Number(displayAmount)，供校验/提交
+    hasRealHourlyWage: boolean
+    isSubmitting: boolean
+    lifeEnergyCaption: string
+  }
+  actions: {
+    onDateChange: (date: Date) => void
+    onCalendarOpenChange: (open: boolean) => void
+    onAmountKeyInput: (key: string) => void
+    onAmountKeyDelete: () => void
+    onDescriptionChange: (description: string) => void
+    onGhostChange: (isGhost: boolean) => void
+    onQuickTagSelect: (tag: string) => void
+    onSubmit: () => void
+    onSubmitAnother: () => void
+    onRealHourlyWageClick: () => void
+  }
+}
 
-  const { mutate: appendTransactionsMutate, isPending: isAppending } =
-    useAppendTransactions()
+export function useRecordForm({
+  onSubmitSuccess,
+}: UseRecordFormOptions): UseRecordFormResult {
   const navigate = useNavigate()
+  const userSettings = useUserSettings()
 
+  const realHourlyWage = userSettings.data?.realHourlyWage ?? 0
+  const hasRealHourlyWage = realHourlyWage > 0
+
+  const { mutate: appendTransactionsMutate, isPending: isSubmitting } =
+    useAppendTransactions()
+
+  // 日期
   const [date, setDate] = useState<Date>(new Date())
-
   // 控制日期选择弹层的开关，便于选完日期后自动收起。
-  const [calendarOpen, setCalendarOpen] = useState(false)
-
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   // 金额用字符串存储，便于处理小数点、前导零等中间态；提交时再转为 number。
   const [amount, setAmount] = useState("")
-
   // 描述：这一笔钱变成了什么。
   const [description, setDescription] = useState("")
-
   // 幽灵账：遇到突发状况时先挂起、暂不正式记入。此处只做开关 UI 状态。
   const [isGhost, setIsGhost] = useState(false)
-  const toggleGhost = () => setIsGhost((prev) => !prev)
 
   const displayAmount = amount || "0" // 金额字符串
-  const numericAmount = Number(displayAmount) // 金额数值
+  const amountValue = Number(displayAmount) // 金额数值
 
-  // 生命能量小时数
-  const lifeEnergyHoursText: string = hasWage
-    ? `${toEnergyHours(Number(amount), realHourlyWage).toFixed(1)} 小时生命能量`
+  // 生命能量小时数文案
+  const lifeEnergyCaption: string = hasRealHourlyWage
+    ? `${toLifeEnergyHours(amountValue, realHourlyWage).toFixed(1)} 小时生命能量`
     : "点击此处设置真实时薪后可预估生命能量"
 
-  function onWageClick() {
-    onSubmitted()
+  function onCalendarOpenChange(open: boolean) {
+    setIsCalendarOpen(open)
+  }
+
+  function onDateChange(nextDate: Date) {
+    setDate(nextDate)
+  }
+
+  function onGhostChange(nextIsGhost: boolean) {
+    setIsGhost(nextIsGhost)
+  }
+
+  function onRealHourlyWageClick() {
+    onSubmitSuccess()
     navigate({ to: "/setting" })
   }
 
+  function onDescriptionChange(nextDescription: string) {
+    setDescription(nextDescription)
+  }
+
+  function onQuickTagSelect(tag: string) {
+    setDescription(tag)
+  }
+
+  function reset() {
+    setAmount("")
+    setDescription("")
+    setIsGhost(false)
+    setDate(new Date())
+    setIsCalendarOpen(false)
+  }
+
   function submit(mode: "close" | "again") {
-    if (!hasWage) {
+    if (!hasRealHourlyWage) {
       toast.error("请先设置真实时薪", {
         position: "top-center",
         action: {
@@ -62,7 +120,7 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
       return
     }
 
-    if (numericAmount <= 0) {
+    if (amountValue <= 0) {
       toast.error("请输入金额", {
         position: "top-center",
       })
@@ -76,13 +134,13 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
       return
     }
 
-    if (isAppending) return
+    if (isSubmitting) return
 
     const now = new Date()
     const rawTransaction = createRawTransaction(
       {
         date: date,
-        amount: numericAmount,
+        amount: amountValue,
         description: description.trim(),
         realHourlyWage: userSettings.data?.realHourlyWage ?? 0,
       },
@@ -103,7 +161,7 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
 
         if (mode === "close") {
           reset()
-          onSubmitted()
+          onSubmitSuccess()
         } else if (mode === "again") {
           reset()
         }
@@ -117,57 +175,50 @@ export function useRecordForm({ onSubmitted }: UseRecordFormOptions) {
     })
   }
 
-  function handleKeyPress(key: string) {
+  function onAmountKeyInput(key: string) {
     setAmount((prev) => appendAmountKey(prev, key))
   }
 
-  function handleDelete() {
+  function onAmountKeyDelete() {
     setAmount((prev) => deleteAmountKey(prev))
   }
 
-  function reset() {
-    setAmount("")
-    setDescription("")
-    setIsGhost(false)
-    setDate(new Date())
-    setCalendarOpen(false)
-  }
-
-  function handleAgain() {
+  function onSubmitAnother() {
     submit("again")
   }
 
-  function handleConfirm() {
+  function onSubmit() {
     submit("close")
   }
 
-  function handleDescription(prev: string) {
-    setDescription(prev)
-  }
-
-  function handleQuickTag(tag: string) {
-    // TODO(交互): 确认填充策略（覆盖 / 追加 / 生成 descriptionKey）
-    setDescription(tag)
-  }
-
   return {
-    hasWage,
-    isAppending,
-    onWageClick,
-    date,
-    setDate,
-    calendarOpen,
-    setCalendarOpen,
-    displayAmount, // amount || "0"
-    description,
-    isGhost,
-    toggleGhost,
-    lifeEnergyHoursText,
-    handleKeyPress,
-    handleDelete,
-    handleAgain,
-    handleConfirm,
-    handleDescription,
-    handleQuickTag,
+    values: {
+      date,
+      amount,
+      description,
+      isGhost,
+    },
+    ui: {
+      isCalendarOpen,
+    },
+    derived: {
+      displayAmount,
+      amountValue,
+      hasRealHourlyWage,
+      isSubmitting,
+      lifeEnergyCaption,
+    },
+    actions: {
+      onDateChange,
+      onCalendarOpenChange,
+      onRealHourlyWageClick,
+      onDescriptionChange,
+      onGhostChange,
+      onQuickTagSelect,
+      onAmountKeyInput,
+      onAmountKeyDelete,
+      onSubmitAnother,
+      onSubmit,
+    },
   }
 }
