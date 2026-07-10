@@ -45,9 +45,7 @@ function RouteComponent() {
 
       <RecordDrawer
         open={recordDrawerOpen}
-        onOpenChange={() => {
-          setRecordDrawerOpen((prev) => !prev)
-        }}
+        onOpenChange={setRecordDrawerOpen}
       />
     </div>
   )

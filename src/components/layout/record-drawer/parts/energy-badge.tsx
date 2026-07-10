@@ -1,5 +1,3 @@
-// 生命能量胶囊
-
 import { Hourglass } from "lucide-react"
 
 type EnergyBadgeProps = {
@@ -8,18 +6,36 @@ type EnergyBadgeProps = {
   lifeEnergyCaption: string
 }
 
-export function EnergyBadge({
+export const EnergyBadge = ({
   hasRealHourlyWage,
   onRealHourlyWageClick,
   lifeEnergyCaption,
-}: EnergyBadgeProps) {
+}: EnergyBadgeProps) => {
+  const content = (
+    <>
+      <Hourglass className="size-3.5" />≈ {lifeEnergyCaption}
+    </>
+  )
+
+  if (!hasRealHourlyWage) {
+    return (
+      <div className="flex justify-center">
+        <button
+          type="button"
+          onClick={onRealHourlyWageClick}
+          aria-label="去设置真实时薪"
+          className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground"
+        >
+          {content}
+        </button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex justify-center">
-      <span
-        onClick={!hasRealHourlyWage ? onRealHourlyWageClick : undefined}
-        className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground"
-      >
-        <Hourglass className="size-3.5" />≈ {lifeEnergyCaption}
+      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">
+        {content}
       </span>
     </div>
   )

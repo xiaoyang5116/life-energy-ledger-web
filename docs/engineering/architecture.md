@@ -27,11 +27,10 @@ UI 基础组件 (src/components/ui) 被路由页面层和特性层组件复用
 ```text
 src/
 ├── routes/                     # 路由页面层
-│   ├── _tabs.tsx               # 底部 Tabbar 布局
+│   ├── _tabs.tsx               # 底部 Tabbar 布局（挂载浮动入口 + RecordDrawer）
 │   ├── _tabs.index.tsx         # 首页：自由仪表盘
 │   ├── _tabs.neaten.tsx        # 待复盘页
-│   ├── _tabs.setting.tsx       # 设置页
-│   └── record.tsx              # 极速录入页（全屏，不放在 _tabs 下）
+│   └── _tabs.setting.tsx       # 设置页
 ├── features/
 │   ├── ledger/
 │   │   ├── model.ts            # 领域类型
@@ -45,6 +44,8 @@ src/
 │       └── hourly-wage.ts      # 真实时薪计算纯函数
 ├── components/
 │   ├── ui/                     # shadcn/ui 基础组件
+│   ├── layout/
+│   │   └── record-drawer/      # 极速录入抽屉（日期 / 金额 / 描述）
 │   └── ...                     # 跨页面复用的业务组件
 └── lib/
     └── utils.ts                # 通用工具
@@ -73,7 +74,7 @@ src/
 
 虽然 MVP 没有网络请求，仍使用 Query 的原因：
 
-- 解决“录入页写入后，首页和待复盘页自动刷新”的跨页面状态同步问题。
+- 解决“录入抽屉写入后，首页和待复盘页自动刷新”的跨页面状态同步问题。
 - 未来接后端 API 时，hooks 签名不变，页面层零改动。
 
 ### 3.3 路由页面层：薄页面
@@ -82,7 +83,7 @@ src/
 
 页面里不应出现 `statEffect === 'consume'` 这类领域判断，它们属于 `stats.ts` 等领域规则文件。
 
-极速录入页不放在 `_tabs` 布局下：它的目标是 3 秒完成一笔，应该是全屏沉浸式页面，从首页入口进入、完成后返回，而不是常驻 Tab。
+极速录入由底部抽屉（`RecordDrawer`）承载，挂在 `_tabs` 布局内，从任意 Tab 的浮动入口打开。目标仍是约 3 秒记一笔，不做成常驻 Tab；抽屉形态便于全局唤起，避免为录入单独跳转全屏路由。
 
 ### 3.4 类型设计：让非法状态不可表示
 
@@ -107,7 +108,7 @@ routes → features → lib
 
 1. 设置初始化 + 真实时薪计算（其他一切的前提）
 2. `storage.ts` + `queries.ts` 数据层
-3. 极速录入页（含 `energyHours`、`descriptionKey` 生成）
+3. 极速录入抽屉（含 `energyHours`、`descriptionKey` 生成）
 4. 待复盘页（按 `descriptionKey` 分组 + 第一次复盘 + 生成规则）
 5. 自动复盘匹配
 6. 首页统计
