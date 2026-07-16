@@ -31,7 +31,7 @@
   }, // 文件嵌套模式
   "files.exclude": {
     "node_modules": true, // 排除 node_modules 目录
-    // ".tanstack": true, // 排除 tanstack 文件夹
+    ".tanstack": true, // 排除 tanstack 文件夹
     ".zed": true // 排除 zed 文件夹
   },
   "files.associations": {
