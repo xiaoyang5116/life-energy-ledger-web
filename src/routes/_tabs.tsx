@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_tabs")({
 
 const tabs: TabItem[] = [
   { to: "/", label: "首页", icon: House },
-  { to: "/neaten", label: "整理", icon: ChartNoAxesColumn },
+  { to: "/review", label: "待复盘", icon: ChartNoAxesColumn },
   { to: "/setting", label: "设置", icon: Settings },
 ]
 

@@ -12,7 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TabsRouteImport } from './routes/_tabs'
 import { Route as TabsIndexRouteImport } from './routes/_tabs.index'
 import { Route as TabsSettingRouteImport } from './routes/_tabs.setting'
-import { Route as TabsNeatenRouteImport } from './routes/_tabs.neaten'
+import { Route as TabsReviewRouteImport } from './routes/_tabs.review'
 
 const TabsRoute = TabsRouteImport.update({
   id: '/_tabs',
@@ -28,35 +28,35 @@ const TabsSettingRoute = TabsSettingRouteImport.update({
   path: '/setting',
   getParentRoute: () => TabsRoute,
 } as any)
-const TabsNeatenRoute = TabsNeatenRouteImport.update({
-  id: '/neaten',
-  path: '/neaten',
+const TabsReviewRoute = TabsReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
   getParentRoute: () => TabsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof TabsIndexRoute
-  '/neaten': typeof TabsNeatenRoute
+  '/review': typeof TabsReviewRoute
   '/setting': typeof TabsSettingRoute
 }
 export interface FileRoutesByTo {
-  '/neaten': typeof TabsNeatenRoute
+  '/review': typeof TabsReviewRoute
   '/setting': typeof TabsSettingRoute
   '/': typeof TabsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_tabs': typeof TabsRouteWithChildren
-  '/_tabs/neaten': typeof TabsNeatenRoute
+  '/_tabs/review': typeof TabsReviewRoute
   '/_tabs/setting': typeof TabsSettingRoute
   '/_tabs/': typeof TabsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/neaten' | '/setting'
+  fullPaths: '/' | '/review' | '/setting'
   fileRoutesByTo: FileRoutesByTo
-  to: '/neaten' | '/setting' | '/'
-  id: '__root__' | '/_tabs' | '/_tabs/neaten' | '/_tabs/setting' | '/_tabs/'
+  to: '/review' | '/setting' | '/'
+  id: '__root__' | '/_tabs' | '/_tabs/review' | '/_tabs/setting' | '/_tabs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -86,24 +86,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TabsSettingRouteImport
       parentRoute: typeof TabsRoute
     }
-    '/_tabs/neaten': {
-      id: '/_tabs/neaten'
-      path: '/neaten'
-      fullPath: '/neaten'
-      preLoaderRoute: typeof TabsNeatenRouteImport
+    '/_tabs/review': {
+      id: '/_tabs/review'
+      path: '/review'
+      fullPath: '/review'
+      preLoaderRoute: typeof TabsReviewRouteImport
       parentRoute: typeof TabsRoute
     }
   }
 }
 
 interface TabsRouteChildren {
-  TabsNeatenRoute: typeof TabsNeatenRoute
+  TabsReviewRoute: typeof TabsReviewRoute
   TabsSettingRoute: typeof TabsSettingRoute
   TabsIndexRoute: typeof TabsIndexRoute
 }
 
 const TabsRouteChildren: TabsRouteChildren = {
-  TabsNeatenRoute: TabsNeatenRoute,
+  TabsReviewRoute: TabsReviewRoute,
   TabsSettingRoute: TabsSettingRoute,
   TabsIndexRoute: TabsIndexRoute,
 }

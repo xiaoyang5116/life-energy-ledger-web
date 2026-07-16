@@ -29,7 +29,7 @@ src/
 ├── routes/                     # 路由页面层
 │   ├── _tabs.tsx               # 底部 Tabbar 布局（挂载浮动入口 + RecordDrawer）
 │   ├── _tabs.index.tsx         # 首页：自由仪表盘
-│   ├── _tabs.neaten.tsx        # 待复盘页
+│   ├── _tabs.review.tsx        # 待复盘页
 │   └── _tabs.setting.tsx       # 设置页
 ├── features/
 │   ├── ledger/
