@@ -40,12 +40,13 @@ export function getPendingReviewTransactions(
   )
 }
 
-type UnreviewedGroup = {
+export type UnreviewedGroup = {
   descriptionKey: string
   description: string
   count: number
   totalAmount: number
   totalLifeEnergyHours: number
+  transactions: Transaction[]
 }
 
 /** 按 descriptionKey 聚合待复盘记录 */
@@ -53,6 +54,7 @@ export function processUnreviewedTransactions(
   unreviewedTransactions: Transaction[]
 ): UnreviewedGroup[] {
   const unreviewedTransactionsList: UnreviewedGroup[] = []
+
   for (const transaction of unreviewedTransactions) {
     const index = unreviewedTransactionsList.findIndex(
       (item) => item.descriptionKey === transaction.descriptionKey
@@ -64,12 +66,14 @@ export function processUnreviewedTransactions(
         count: 1,
         totalAmount: transaction.amount,
         totalLifeEnergyHours: transaction.energyHours,
+        transactions: [transaction],
       })
     } else {
       unreviewedTransactionsList[index].count += 1
       unreviewedTransactionsList[index].totalAmount += transaction.amount
       unreviewedTransactionsList[index].totalLifeEnergyHours +=
         transaction.energyHours
+      unreviewedTransactionsList[index].transactions.push(transaction)
     }
   }
 

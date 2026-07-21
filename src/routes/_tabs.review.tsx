@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { useTransactions } from "@/features/ledger/queries"
@@ -6,6 +8,7 @@ import {
   processUnreviewedTransactions,
 } from "@/features/ledger/transaction"
 import { createFileRoute } from "@tanstack/react-router"
+import { ReviewPop } from "@/components/review/review-pop"
 
 export const Route = createFileRoute("/_tabs/review")({
   component: RouteComponent,
@@ -13,6 +16,7 @@ export const Route = createFileRoute("/_tabs/review")({
 
 function RouteComponent() {
   const { data: transactions, isLoading } = useTransactions()
+  const [reviewPopOpen, setReviewPopOpen] = useState(false)
 
   if (isLoading) {
     return <div className="p-6 text-sm text-muted-foreground">加载中…</div>
@@ -21,7 +25,9 @@ function RouteComponent() {
   const pendingReview = getPendingReviewTransactions(transactions)
   const pendingReviewGroups = processUnreviewedTransactions(pendingReview)
 
-  const handleStartReview = () => {}
+  const handleStartReview = () => {
+    setReviewPopOpen(true)
+  }
 
   const handleGroupClick = () => {}
 
@@ -37,6 +43,12 @@ function RouteComponent() {
           开始复盘
         </Button>
       </div>
+
+      <ReviewPop
+        open={reviewPopOpen}
+        onOpenChange={(open) => setReviewPopOpen(open)}
+        pendingReviewGroups={pendingReviewGroups}
+      />
 
       {pendingReviewGroups.length === 0 ? (
         <p className="text-sm text-muted-foreground">暂无待复盘记录</p>
